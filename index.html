@@ -48,7 +48,7 @@ body { margin: 0; background: var(--papel); color: var(--tinta); font: 18px/1.5 
 .manchete { padding-block: 36px 28px; border-bottom: 1px solid var(--fio); display: grid; grid-template-columns: 1.3fr 1fr; gap: 40px; align-items: end; }
 .manchete > * { min-width: 0; }
 h1 { font: 400 clamp(52px, 9vw, 128px)/.9 var(--f-display); text-transform: uppercase; margin: 0; letter-spacing: -.005em; }
-h1 span { color: var(--ouro); }
+h1 .realce { color: var(--ouro); }
 .manchete p { margin: 0 0 8px; font-size: 20px; color: var(--suave); }
 .cta { display: inline-block; background: var(--ouro); color: var(--ouro-tinta); text-decoration: none; font: 600 16px/1 var(--f-texto); text-transform: uppercase; letter-spacing: .08em; padding: 16px 22px; border: 0; cursor: pointer; }
 .cta:hover { background: var(--tinta); }
@@ -57,7 +57,7 @@ h1 span { color: var(--ouro); }
 
 .secao-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-block: 32px 10px; border-bottom: 3px solid var(--fio); }
 .secao-cab h2 { font: 400 28px/1 var(--f-display); text-transform: uppercase; margin: 0; }
-.secao-cab span { font: 500 13px var(--f-num); color: var(--cinza); text-transform: uppercase; text-align: right; }
+.secao-cab > span { font: 500 13px var(--f-num); color: var(--cinza); text-transform: uppercase; text-align: right; }
 
 /* classificação */
 .rolagem { overflow-x: auto; }
@@ -158,6 +158,38 @@ details p { margin: 0 0 18px; color: var(--suave); max-width: 60ch; }
 
 footer { padding-block: 24px 40px; font: 500 14px var(--f-num); color: var(--cinza); display: flex; flex-wrap: wrap; gap: 8px 28px; border-top: 6px solid var(--fio); }
 footer a { color: var(--ouro); }
+
+/* ---------- movimento (só liga com JavaScript e sem "reduzir movimento") ---------- */
+body { overflow-x: clip; }
+.progresso { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; width: 100%; height: 3px; background: var(--ouro); transform-origin: 0 50%; transform: scaleX(0); z-index: 30; pointer-events: none; }
+.mov .letras .p { display: inline-block; white-space: nowrap; }
+.mov .letras .l { display: inline-block; transform: translateY(.95em) rotate(7deg); opacity: 0; transition: transform .75s cubic-bezier(.2,.8,.2,1), opacity .45s ease; transition-delay: calc(var(--i) * 24ms); }
+.mov .letras.visivel .l { transform: none; opacity: 1; }
+.mov .revela { opacity: 0; transform: translateY(26px); transition: opacity .7s ease, transform .85s cubic-bezier(.2,.8,.2,1); transition-delay: var(--d, 0ms); }
+.mov .revela.zoom { transform: translateY(26px) scale(.94); }
+.mov .revela.visivel { opacity: 1; transform: none; }
+
+/* letreiro em duas linhas, sentidos opostos; acelera com a rolagem */
+.letreiros { width: 100vw; margin-left: calc(50% - 50vw); border-bottom: 1px solid var(--fio-claro); padding-block: 18px; overflow: hidden; display: grid; gap: 6px; }
+.letreiro { display: flex; width: max-content; font: 400 clamp(40px, 6.4vw, 84px)/1.05 var(--f-display); text-transform: uppercase; will-change: transform; }
+.letreiro span { padding-right: .55em; white-space: nowrap; }
+.letreiro span::after { content: "●"; font-size: .3em; vertical-align: middle; margin-left: .55em; color: var(--ouro); }
+.letreiro.vazado span { color: transparent; -webkit-text-stroke: 1.5px var(--cinza); }
+.letreiro.vazado span:nth-child(3n) { color: var(--ouro); -webkit-text-stroke: 0; }
+
+/* carrossel dos prints do celular */
+.carrossel-cab { display: flex; gap: 8px; }
+.seta { width: 40px; height: 40px; border: 1px solid var(--cinza); background: transparent; color: var(--tinta); font: 600 18px/1 var(--f-num); cursor: pointer; }
+.seta:hover { background: var(--ouro); color: var(--ouro-tinta); border-color: var(--ouro); }
+.seta[disabled] { opacity: .3; cursor: default; background: transparent; color: var(--tinta); border-color: var(--cinza); }
+.celulares { display: grid; grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: calc((100% - 40px) / 3); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; scroll-behavior: smooth; }
+.celulares::-webkit-scrollbar { display: none; }
+.celulares figure { scroll-snap-align: start; }
+@media (max-width: 720px) { .celulares { grid-auto-columns: 78%; } }
+.pontos { display: flex; gap: 8px; justify-content: center; margin-top: 14px; }
+.pontos button { width: 26px; height: 4px; border: 0; padding: 0; background: var(--fio-claro); cursor: pointer; }
+.pontos button[aria-current="true"] { background: var(--ouro); }
+@media (min-width: 721px) { .pontos, .carrossel-cab { display: none; } }
 </style>
 </head>
 <body>
@@ -168,12 +200,17 @@ footer a { color: var(--ouro); }
 
 <main class="faixa"><div class="miolo">
   <section class="manchete">
-    <h1>Qual conta <span>rende</span> mais?</h1>
+    <h1>Qual conta <span class="realce">rende</span> mais?</h1>
     <div>
       <p>O PokeOver junta suas 4 contas numa janela e mostra EXP, kills e gold por hora de cada uma. Daí em diante, escolher a hunt vira questão de olhar o placar.</p>
       <a class="cta" href="#assinar">Assinar por R$ 15/mês</a>
     </div>
   </section>
+
+  <div class="letreiros" aria-hidden="true">
+    <div class="letreiro" data-vel="1"><span>4 contas numa janela</span><span>EXP por hora</span><span>Kills por hora</span><span>Gold por hora</span><span>Capturas com IV</span><span>Pokédex</span><span>Incubadora</span><span>Avisos no celular</span></div>
+    <div class="letreiro vazado" data-vel="-1"><span>Larvitar</span><span>Heracross</span><span>Voltorb</span><span>Pikachu</span><span>Geodude</span><span>Electrode</span><span>Pidgey</span><span>Golem</span><span>Gyarados</span></div>
+  </div>
 
   <section>
     <div class="secao-cab"><h2>Classificação</h2><span>Dados reais · 4 contas na hunt de Larvitar</span></div>
@@ -209,8 +246,8 @@ footer a { color: var(--ouro); }
   </section>
 
   <section>
-    <div class="secao-cab"><h2>No celular</h2><span>Prints reais do app Android</span></div>
-    <div class="celulares">
+    <div class="secao-cab"><h2>No celular</h2><span class="carrossel-cab"><button class="seta" type="button" id="cel-ant" aria-label="Print anterior">←</button><button class="seta" type="button" id="cel-prox" aria-label="Próximo print">→</button></span></div>
+    <div class="celulares" id="celulares" tabindex="0" aria-label="Prints reais do app Android">
       <figure><img src="img/celular-contas.webp" width="396" height="790" alt="App do celular listando as quatro contas, todas farmando, com EXP por hora" loading="lazy"><figcaption><b>As 4 contas</b>Quem está farmando e quanto rende.</figcaption></figure>
       <figure><img src="img/celular-conta.webp" width="396" height="790" alt="Conta aberta no celular com kills, lucro, nível, capturas com IV e quality e o que falta na Pokédex" loading="lazy"><figcaption><b>Uma conta aberta</b>Capturas com IV e quality e o que falta na Pokédex.</figcaption></figure>
       <figure><img src="img/celular-avisos.webp" width="396" height="790" alt="Últimas notificações: IV 180 capturado, ovo chocou, espécie nova na Pokédex e login precisa de você" loading="lazy"><figcaption><b>Os avisos</b>IV alto, ovo chocou, Pokédex, login.</figcaption></figure>
@@ -408,6 +445,107 @@ document.querySelectorAll('[data-copiar]').forEach(b => b.addEventListener('clic
 const doLink = new URLSearchParams(location.search).get('pedido');
 const pedidoAberto = (doLink && /^[0-9a-f]{32}$/.test(doLink)) ? doLink : ler('pokeover:pedido');
 if (pedidoAberto) mostrarPedido(pedidoAberto);
+
+// ---------- movimento ----------
+(() => {
+  const calmo = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const celulares = $('celulares');
+  // carrossel dos prints: setas, pontinhos e passa sozinho no celular (vale também sem movimento, sem o automático)
+  const itens = [...celulares.children];
+  const pontos = document.createElement('div'); pontos.className = 'pontos';
+  itens.forEach((f, i) => { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', 'Ir para o print ' + (i + 1)); b.onclick = () => irPara(i); pontos.appendChild(b); });
+  celulares.after(pontos);
+  const atual = () => Math.round(celulares.scrollLeft / Math.max(1, itens[0].offsetWidth + 20));
+  const irPara = i => celulares.scrollTo({ left: itens[Math.max(0, Math.min(itens.length - 1, i))].offsetLeft - celulares.offsetLeft, behavior: calmo ? 'auto' : 'smooth' });
+  const marcar = () => { const a = atual(); [...pontos.children].forEach((b, i) => b.setAttribute('aria-current', i === a)); $('cel-ant').disabled = a === 0; $('cel-prox').disabled = a >= itens.length - 1 || celulares.scrollLeft + celulares.clientWidth >= celulares.scrollWidth - 4; };
+  celulares.addEventListener('scroll', () => requestAnimationFrame(marcar), { passive: true });
+  $('cel-ant').onclick = () => { parado = true; irPara(atual() - 1); };
+  $('cel-prox').onclick = () => { parado = true; irPara(atual() + 1); };
+  let parado = false;
+  ['pointerdown', 'touchstart', 'wheel', 'keydown'].forEach(ev => celulares.addEventListener(ev, () => (parado = true), { passive: true }));
+  marcar();
+  if (!calmo) setInterval(() => {
+    if (parado || celulares.scrollWidth <= celulares.clientWidth + 4) return;
+    const r = celulares.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
+    irPara(atual() >= itens.length - 1 ? 0 : atual() + 1);
+  }, 3800);
+
+  if (calmo) return;
+  document.documentElement.classList.add('mov');
+
+  // barra de leitura
+  const barra = document.createElement('div'); barra.className = 'progresso'; document.body.appendChild(barra);
+
+  // letras: quebra o texto em palavras e letras (mantém o <span> colorido do título)
+  let n = 0;
+  const quebrar = el => {
+    n = 0;
+    const andar = no => [...no.childNodes].forEach(c => {
+      if (c.nodeType === 3) {
+        const frag = document.createDocumentFragment();
+        c.textContent.split(/(\s+)/).forEach(parte => {
+          if (!parte) return;
+          if (/^\s+$/.test(parte)) { frag.appendChild(document.createTextNode(' ')); return; }
+          const p = document.createElement('span'); p.className = 'p';
+          [...parte].forEach(ch => { const l = document.createElement('span'); l.className = 'l'; l.textContent = ch; l.style.setProperty('--i', n++); p.appendChild(l); });
+          frag.appendChild(p);
+        });
+        c.replaceWith(frag);
+      } else if (c.nodeType === 1) andar(c);
+    });
+    el.setAttribute('aria-label', el.textContent); andar(el); el.classList.add('letras');
+  };
+  document.querySelectorAll('h1, .secao-cab h2').forEach(quebrar);
+
+  // blocos que entram em sequência
+  const revelar = (sel, passo = 90, extra = '') => document.querySelectorAll(sel).forEach((el, i) => { el.classList.add('revela'); if (extra) el.classList.add(extra); el.style.setProperty('--d', (i % 6) * passo + 'ms'); });
+  revelar('.rolagem', 0); revelar('.numeros > div', 120); revelar('.print-pc', 0, 'zoom'); revelar('.colunas article', 80);
+  revelar('.manchete p, .manchete .cta', 160); revelar('.celulares figure', 120); revelar('.preco ul li', 60);
+
+  // números contando do zero
+  const contar = el => {
+    const txt = el.textContent.trim(), alvo = parseFloat(txt.replace(/[^\d,]/g, '').replace(/\./g, '').replace(',', '.')) || 0;
+    const casas = (txt.match(/,(\d+)/) || [, ''])[1].length, pre = txt.match(/^[^\d]*/)[0], suf = txt.match(/[^\d]*$/)[0];
+    const t0 = performance.now(), dur = 1300;
+    const passo = t => { const k = Math.max(0, Math.min(1, (t - t0) / dur)), e = 1 - Math.pow(1 - k, 3);
+      el.textContent = pre + (alvo * e).toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas }) + suf;
+      if (k < 1) requestAnimationFrame(passo); else el.textContent = txt; };
+    requestAnimationFrame(passo);
+  };
+
+  // aparece quando o topo do bloco entra na tela (conferido a cada quadro, junto com o letreiro)
+  let pendentes = [...document.querySelectorAll('.letras, .revela')];
+  const mostrar = el => {
+    el.classList.add('visivel');
+    if (el.matches('.rolagem')) el.querySelectorAll('td.destaque').forEach((d, i) => setTimeout(() => contar(d), 150 + i * 120));
+    if (el.matches('.numeros > div')) contar(el.querySelector('b'));
+  };
+  const conferir = () => {
+    if (!pendentes.length) return;
+    const limite = innerHeight * 0.92;
+    pendentes = pendentes.filter(el => { const r = el.getBoundingClientRect(); if (r.top < limite && r.bottom > 0) { mostrar(el); return false; } return true; });
+  };
+
+  // letreiros: andam sozinhos e aceleram com a velocidade da rolagem
+  const linhas = [...document.querySelectorAll('.letreiro')].map(el => {
+    el.innerHTML += el.innerHTML; // duas cópias para dar a volta sem emenda
+    return { el, dir: +el.dataset.vel, x: el.dataset.vel > 0 ? 0 : -el.scrollWidth / 2 };
+  });
+  let ultimoY = scrollY, vel = 0;
+  const quadro = () => {
+    conferir();
+    const y = scrollY; vel = vel * .9 + Math.abs(y - ultimoY) * .1; ultimoY = y;
+    const max = document.documentElement.scrollHeight - innerHeight; barra.style.transform = `scaleX(${max > 0 ? y / max : 0})`;
+    linhas.forEach(l => {
+      const meio = l.el.scrollWidth / 2;
+      l.x -= l.dir * (0.6 + vel * 0.35);
+      if (l.x <= -meio) l.x += meio; if (l.x > 0) l.x -= meio;
+      l.el.style.transform = `translate3d(${l.x}px,0,0)`;
+    });
+    requestAnimationFrame(quadro);
+  };
+  requestAnimationFrame(quadro);
+})();
 </script>
 
 </body>
