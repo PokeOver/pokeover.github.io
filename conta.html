@@ -117,19 +117,24 @@ footer a { color: var(--ouro); }
     <p class="ajuda"><a href="#" id="ir-recuperar">Esqueci a senha</a> · Ainda não tem login? <a href="index.html#assinar">Assine aqui</a>.</p>
   </section>
 
-  <!-- recuperar a senha com a chave -->
+  <!-- recuperar a senha por código no email -->
   <section class="entrar" id="tela-recuperar" hidden>
     <h1>Nova senha</h1>
-    <p class="lead">Use a chave de recuperação que você gerou na área do cliente. Ela só vale uma vez.</p>
-    <form id="f-recuperar" novalidate>
-      <div class="campo"><label for="r-u">Login</label><input id="r-u" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="seunome"></div>
-      <div class="campo"><label for="r-chave">Chave de recuperação</label><input id="r-chave" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXXX-XXXXX-XXXXX-XXXXX" style="font-family:var(--f-num)"></div>
+    <p class="lead" id="r-lead">Digite seu login ou email. Mandamos um código de 6 números para o email da conta.</p>
+    <form id="f-pedir" novalidate>
+      <div class="campo"><label for="r-u">Login ou email</label><input id="r-u" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="seunome ou voce@email.com"></div>
+      <button class="cta" id="b-pedir" type="submit">Mandar o código</button>
+      <div class="msg" id="m-pedir" role="status"></div>
+    </form>
+    <form id="f-recuperar" novalidate hidden>
+      <div class="campo"><label for="r-codigo">Código do email</label><input id="r-codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" style="font-family:var(--f-num);letter-spacing:.3em"></div>
       <div class="campo"><label for="r-nova">Senha nova</label><input id="r-nova" type="password" autocomplete="new-password" placeholder="6 caracteres ou mais"></div>
       <div class="campo"><label for="r-nova2">Repita a senha nova</label><input id="r-nova2" type="password" autocomplete="new-password"></div>
       <button class="cta" id="b-recuperar" type="submit">Criar a senha nova</button>
       <div class="msg" id="m-recuperar" role="status"></div>
+      <p class="ajuda" style="margin-top:12px"><a href="#" id="reenviar">Não chegou? Mandar de novo</a></p>
     </form>
-    <p class="ajuda">Não gerou a chave? Chame o suporte no WhatsApp <a href="https://wa.me/5522998692343" target="_blank" rel="noopener">(22) 99869-2343</a>. · <a href="#" id="voltar-entrar">Voltar para entrar</a></p>
+    <p class="ajuda">Sem email cadastrado? Chame o suporte no WhatsApp <a href="https://wa.me/5522998692343" target="_blank" rel="noopener">(22) 99869-2343</a>. · <a href="#" id="voltar-entrar">Voltar para entrar</a></p>
   </section>
 
   <!-- conta -->
@@ -175,11 +180,13 @@ footer a { color: var(--ouro); }
     </section>
 
     <section class="senha">
-      <div class="secao-cab"><h2>Chave de recuperação</h2><span>Para quando esquecer a senha</span></div>
-      <p class="texto" id="chave-texto">Gere uma chave e guarde num lugar seguro (print, anotação). Com ela você cria uma senha nova sem precisar do suporte.</p>
-      <div class="chave" id="chave-caixa" hidden><span class="num" id="chave"></span><button class="copiar" type="button" id="copiar-chave">Copiar</button></div>
-      <button class="cta linha" id="b-chave" type="button">Gerar chave</button>
-      <div class="msg" id="m-chave" role="status"></div>
+      <div class="secao-cab"><h2>Meu email</h2><span>Para recuperar a senha</span></div>
+      <p class="texto" id="email-texto">Se esquecer a senha, o código para criar uma nova chega neste email.</p>
+      <form id="f-email" novalidate>
+        <div class="campo"><label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="voce@email.com"></div>
+        <button class="cta linha" id="b-email" type="submit">Salvar email</button>
+        <div class="msg" id="m-email" role="status"></div>
+      </form>
     </section>
     </div>
 
@@ -282,14 +289,12 @@ function pintar(c) {
     : espera ? `Você já trocou de PC há pouco. Libera de novo em ${data(c.pc_libera_em, true)}.`
     : 'Formatou ou trocou de computador? Solte o PC atual e entre no PokeOver no novo: ele fica ligado ao seu login.';
   $('f-pc').hidden = !c.pc_preso || espera;
-  // chave de recuperação
-  const b = $('b-chave'); b.dataset.tem = c.tem_chave ? '1' : ''; b.dataset.confirmar = '';
-  if ($('chave-caixa').hidden) {
-    b.textContent = c.tem_chave ? 'Gerar outra chave' : 'Gerar chave';
-    $('chave-texto').textContent = c.tem_chave
-      ? `Você já tem uma chave, gerada em ${data(c.chave_criada_em)}. Gerar outra faz a antiga parar de valer.`
-      : 'Gere uma chave e guarde num lugar seguro (print, anotação). Com ela você cria uma senha nova sem precisar do suporte.';
-  }
+  // email
+  if (document.activeElement !== $('email')) $('email').value = c.email || '';
+  $('b-email').textContent = c.email ? 'Trocar email' : 'Salvar email';
+  $('email-texto').textContent = c.email
+    ? 'Se esquecer a senha, o código para criar uma nova chega neste email.'
+    : 'Você ainda não tem email cadastrado. Sem ele, só o suporte consegue trocar sua senha se você esquecer.';
 }
 
 $('f-senha').addEventListener('submit', async e => {
@@ -311,26 +316,43 @@ $('f-senha').addEventListener('submit', async e => {
 
 // esqueci a senha
 const tela = qual => { $('tela-entrar').hidden = qual !== 'entrar'; $('tela-recuperar').hidden = qual !== 'recuperar'; };
-$('ir-recuperar').onclick = e => { e.preventDefault(); $('r-u').value = $('u').value; tela('recuperar'); };
+$('ir-recuperar').onclick = e => { e.preventDefault(); $('r-u').value = $('u').value; $('f-pedir').hidden = false; $('f-recuperar').hidden = true; tela('recuperar'); };
 $('voltar-entrar').onclick = e => { e.preventDefault(); tela('entrar'); };
-$('r-chave').addEventListener('input', e => {
-  const h = e.target.value.toUpperCase().replace(/[^0-9A-F]/g, '').slice(0, 20);
-  e.target.value = h.match(/.{1,5}/g)?.join('-') || '';
-});
+const FUNCOES = SB + '/functions/v1/';
+async function pedirCodigo() {
+  const m = $('m-pedir'), b = $('b-pedir'); m.className = 'msg'; m.textContent = '';
+  const ident = $('r-u').value.trim();
+  if (ident.length < 3) { m.textContent = 'Digite seu login ou email.'; return false; }
+  b.disabled = true; b.textContent = 'Mandando…';
+  try {
+    const r = await fetch(FUNCOES + 'pokeover-conta', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ acao: 'recuperar', ident }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) { m.textContent = d.erro || 'Não deu para mandar agora.'; return false; }
+    $('f-pedir').hidden = true; $('f-recuperar').hidden = false;
+    $('r-lead').textContent = d.msg || 'Se o login existir e tiver email, o código chega em instantes.';
+    $('r-codigo').focus(); return true;
+  } catch { m.textContent = 'Sem conexão. Confira sua internet e tente de novo.'; return false; }
+  finally { b.disabled = false; b.textContent = 'Mandar o código'; }
+}
+$('f-pedir').addEventListener('submit', e => { e.preventDefault(); pedirCodigo(); });
+$('reenviar').onclick = e => { e.preventDefault(); $('f-recuperar').hidden = true; $('f-pedir').hidden = false; $('m-pedir').textContent = 'Espere 1 minuto entre um pedido e outro.'; };
+$('r-codigo').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6); });
 $('f-recuperar').addEventListener('submit', async e => {
   e.preventDefault();
   const m = $('m-recuperar'), b = $('b-recuperar'); m.className = 'msg'; m.textContent = '';
-  const u = $('r-u').value.trim().toLowerCase(), chave = $('r-chave').value, nova = $('r-nova').value;
-  if (!u || chave.replace(/-/g, '').length !== 20) { m.textContent = 'Preencha o login e a chave inteira (20 letras e números).'; return; }
+  const ident = $('r-u').value.trim(), codigo = $('r-codigo').value, nova = $('r-nova').value;
+  if (codigo.length !== 6) { m.textContent = 'O código tem 6 números.'; return; }
   if (nova !== $('r-nova2').value) { m.textContent = 'As duas senhas novas não são iguais.'; return; }
   if (nova.length < 6) { m.textContent = MSG.senha_fraca; return; }
   b.disabled = true; b.textContent = 'Criando…';
   try {
-    const r = await rpc('pokeover_conta_recuperar', { p_usuario: u, p_chave: chave, p_nova: nova });
-    if (r.status !== 'ok') { m.textContent = r.status === 'invalido' ? 'Login ou chave não conferem.' : (MSG[r.status] || 'Não deu certo: ' + r.status); return; }
-    ['r-chave', 'r-nova', 'r-nova2'].forEach(id => ($(id).value = ''));
-    $('u').value = u; tela('entrar');
-    const me = $('m-entrar'); me.className = 'msg ok'; me.textContent = 'Senha nova criada. Entre com ela. A chave usada não vale mais: gere outra lá dentro.';
+    const r = await rpc('pokeover_conta_recuperar', { p_ident: ident, p_codigo: codigo, p_nova: nova });
+    if (r.status === 'codigo') { m.textContent = 'Código errado. Confira o último email que chegou.'; return; }
+    if (r.status === 'expirado') { m.textContent = 'Esse código venceu ou foi errado muitas vezes. Peça outro.'; return; }
+    if (r.status !== 'ok') { m.textContent = MSG[r.status] || 'Não deu certo: ' + r.status; return; }
+    ['r-codigo', 'r-nova', 'r-nova2'].forEach(id => ($(id).value = ''));
+    $('u').value = r.usuario || ''; tela('entrar');
+    const me = $('m-entrar'); me.className = 'msg ok'; me.textContent = 'Senha nova criada. Entre com ela.';
   } catch (err) { m.textContent = err.message; }
   finally { b.disabled = false; b.textContent = 'Criar a senha nova'; }
 });
@@ -354,27 +376,22 @@ $('f-pc').addEventListener('submit', async e => {
   finally { b.disabled = false; b.textContent = 'Soltar o PC atual'; }
 });
 
-// chave de recuperação
-$('b-chave').onclick = async () => {
-  const m = $('m-chave'), b = $('b-chave'); m.className = 'msg'; m.textContent = '';
-  if (b.dataset.confirmar !== '1' && b.dataset.tem === '1') { b.dataset.confirmar = '1'; b.textContent = 'Gerar mesmo assim (a antiga para de valer)'; return; }
-  b.disabled = true;
+// email da conta
+$('f-email').addEventListener('submit', async e => {
+  e.preventDefault();
+  const m = $('m-email'), b = $('b-email'); m.className = 'msg'; m.textContent = '';
+  const email = $('email').value.trim();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { m.textContent = 'Confira o email.'; return; }
+  b.disabled = true; b.textContent = 'Salvando…';
   try {
-    const r = await rpc('pokeover_conta_gerar_chave', { p_token: sessao.get() });
+    const r = await rpc('pokeover_conta_salvar_email', { p_token: sessao.get(), p_email: email });
     if (r.status === 'sessao') { sessao.set(null); return mostrarEntrar(MSG.sessao); }
-    if (r.status !== 'ok') { m.textContent = 'Não deu certo: ' + r.status; return; }
-    $('chave').textContent = r.chave; $('chave-caixa').hidden = false;
-    m.className = 'msg ok'; m.textContent = 'Guarde esta chave agora: ela aparece só esta vez.';
-    b.dataset.confirmar = ''; b.dataset.tem = '1'; b.textContent = 'Gerar outra chave';
+    if (r.status !== 'ok') { m.textContent = r.status === 'email_invalido' ? 'Confira o email.' : 'Não deu certo: ' + r.status; return; }
+    m.className = 'msg ok'; m.textContent = 'Email salvo. É para ele que vai o código se você esquecer a senha.';
+    carregar();
   } catch (err) { m.textContent = err.message; }
-  finally { b.disabled = false; }
-};
-$('copiar-chave').onclick = async () => {
-  const b = $('copiar-chave'), el = $('chave');
-  try { await navigator.clipboard.writeText(el.textContent); b.textContent = 'Copiado'; }
-  catch { const s = getSelection(), r = document.createRange(); r.selectNodeContents(el); s.removeAllRanges(); s.addRange(r); b.textContent = 'Selecionado'; }
-  setTimeout(() => (b.textContent = 'Copiar'), 1800);
-};
+  finally { b.disabled = false; b.textContent = 'Salvar email'; }
+});
 
 $('sair').onclick = async () => { const t = sessao.get(); sessao.set(null); mostrarEntrar(); if (t) rpc('pokeover_conta_sair', { p_token: t }).catch(() => {}); };
 carregar();
