@@ -84,6 +84,14 @@ form .cta { margin-top: 20px; width: 100%; }
 .secao-cab h2 { font: 400 28px/1 var(--f-display); text-transform: uppercase; margin: 0; }
 .secao-cab > span { font: 500 13px var(--f-num); color: var(--cinza); text-transform: uppercase; }
 .senha { max-width: 560px; padding-bottom: 40px; }
+.duas { display: grid; grid-template-columns: 1fr 1fr; gap: 0 48px; }
+.duas > * { min-width: 0; max-width: none; }
+@media (max-width: 860px) { .duas { grid-template-columns: 1fr; } }
+.texto { color: var(--suave); font-size: 16px; margin: 14px 0 4px; }
+.chave { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 2px solid var(--ouro); background: #1c1a10; padding: 14px 16px; margin: 14px 0; }
+.chave .num { font-size: clamp(16px, 2.4vw, 21px); color: var(--ouro); overflow-wrap: anywhere; }
+.copiar { border: 1px solid var(--cinza); background: var(--painel); color: var(--tinta); font: 600 13px var(--f-texto); text-transform: uppercase; padding: 6px 10px; cursor: pointer; flex: none; }
+#b-chave { margin-top: 14px; }
 .senha form { border-top: 0; }
 footer { padding-block: 24px 40px; font: 500 14px var(--f-num); color: var(--cinza); display: flex; flex-wrap: wrap; gap: 8px 28px; border-top: 6px solid var(--fio); }
 footer a { color: var(--ouro); }
@@ -106,7 +114,22 @@ footer a { color: var(--ouro); }
       <button class="cta" id="b-entrar" type="submit">Entrar</button>
       <div class="msg" id="m-entrar" role="status"></div>
     </form>
-    <p class="ajuda">Esqueceu a senha? Chame o suporte no WhatsApp <a href="https://wa.me/5522998692343" target="_blank" rel="noopener">(22) 99869-2343</a>. Ainda não tem login? <a href="index.html#assinar">Assine aqui</a>.</p>
+    <p class="ajuda"><a href="#" id="ir-recuperar">Esqueci a senha</a> · Ainda não tem login? <a href="index.html#assinar">Assine aqui</a>.</p>
+  </section>
+
+  <!-- recuperar a senha com a chave -->
+  <section class="entrar" id="tela-recuperar" hidden>
+    <h1>Nova senha</h1>
+    <p class="lead">Use a chave de recuperação que você gerou na área do cliente. Ela só vale uma vez.</p>
+    <form id="f-recuperar" novalidate>
+      <div class="campo"><label for="r-u">Login</label><input id="r-u" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="seunome"></div>
+      <div class="campo"><label for="r-chave">Chave de recuperação</label><input id="r-chave" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXXX-XXXXX-XXXXX-XXXXX" style="font-family:var(--f-num)"></div>
+      <div class="campo"><label for="r-nova">Senha nova</label><input id="r-nova" type="password" autocomplete="new-password" placeholder="6 caracteres ou mais"></div>
+      <div class="campo"><label for="r-nova2">Repita a senha nova</label><input id="r-nova2" type="password" autocomplete="new-password"></div>
+      <button class="cta" id="b-recuperar" type="submit">Criar a senha nova</button>
+      <div class="msg" id="m-recuperar" role="status"></div>
+    </form>
+    <p class="ajuda">Não gerou a chave? Chame o suporte no WhatsApp <a href="https://wa.me/5522998692343" target="_blank" rel="noopener">(22) 99869-2343</a>. · <a href="#" id="voltar-entrar">Voltar para entrar</a></p>
   </section>
 
   <!-- conta -->
@@ -139,6 +162,26 @@ footer a { color: var(--ouro); }
         <li><span>Cliente desde</span><b class="num" id="f-desde"></b></li>
       </ul>
     </section>
+
+    <div class="duas">
+    <section class="senha">
+      <div class="secao-cab"><h2>Trocar de PC</h2><span>1 vez a cada 3 dias</span></div>
+      <p class="texto" id="pc-texto">Formatou ou trocou de computador? Solte o PC atual e entre no PokeOver no novo: ele fica ligado ao seu login.</p>
+      <form id="f-pc" novalidate>
+        <div class="campo"><label for="pc-senha">Sua senha, para confirmar</label><input id="pc-senha" type="password" autocomplete="current-password"></div>
+        <button class="cta" id="b-pc" type="submit">Soltar o PC atual</button>
+        <div class="msg" id="m-pc" role="status"></div>
+      </form>
+    </section>
+
+    <section class="senha">
+      <div class="secao-cab"><h2>Chave de recuperação</h2><span>Para quando esquecer a senha</span></div>
+      <p class="texto" id="chave-texto">Gere uma chave e guarde num lugar seguro (print, anotação). Com ela você cria uma senha nova sem precisar do suporte.</p>
+      <div class="chave" id="chave-caixa" hidden><span class="num" id="chave"></span><button class="copiar" type="button" id="copiar-chave">Copiar</button></div>
+      <button class="cta linha" id="b-chave" type="button">Gerar chave</button>
+      <div class="msg" id="m-chave" role="status"></div>
+    </section>
+    </div>
 
     <section class="senha">
       <div class="secao-cab"><h2>Trocar a senha</h2><span>Vale no programa e no app</span></div>
@@ -198,10 +241,10 @@ async function carregar() {
   if (c.status !== 'ok') { sessao.set(null); return mostrarEntrar(MSG[c.status]); }
   pintar(c);
 }
-function mostrarEntrar(msg) { $('tela-conta').hidden = true; $('tela-entrar').hidden = false; $('sair').hidden = true; if (msg) $('m-entrar').textContent = msg; }
+function mostrarEntrar(msg) { $('tela-conta').hidden = true; $('tela-recuperar').hidden = true; $('tela-entrar').hidden = false; $('sair').hidden = true; if (msg) $('m-entrar').textContent = msg; }
 
 function pintar(c) {
-  $('tela-entrar').hidden = true; $('tela-conta').hidden = false; $('sair').hidden = false;
+  $('tela-entrar').hidden = true; $('tela-recuperar').hidden = true; $('tela-conta').hidden = false; $('sair').hidden = false;
   const agora = new Date(c.agora).getTime(), fim = c.expira_em ? new Date(c.expira_em).getTime() : null;
   const dias = fim == null ? null : Math.max(0, Math.ceil((fim - agora) / 86400000));
   const vencido = fim != null && fim <= agora;
@@ -232,6 +275,21 @@ function pintar(c) {
   $('f-pag').textContent = c.assinatura ? `${c.pagamentos} · último em ${data(c.ultimo_pagamento)}` : 'Nenhum';
   $('f-desde').textContent = data(c.criado_em);
   $('alerta-senha').hidden = !c.senha_inicial;
+  // trocar de PC
+  const espera = c.pc_libera_em && new Date(c.pc_libera_em).getTime() > agora;
+  $('pc-texto').textContent = !c.pc_preso
+    ? 'Nenhum PC ligado agora. O próximo login no programa liga o PC ao seu login.'
+    : espera ? `Você já trocou de PC há pouco. Libera de novo em ${data(c.pc_libera_em, true)}.`
+    : 'Formatou ou trocou de computador? Solte o PC atual e entre no PokeOver no novo: ele fica ligado ao seu login.';
+  $('f-pc').hidden = !c.pc_preso || espera;
+  // chave de recuperação
+  const b = $('b-chave'); b.dataset.tem = c.tem_chave ? '1' : ''; b.dataset.confirmar = '';
+  if ($('chave-caixa').hidden) {
+    b.textContent = c.tem_chave ? 'Gerar outra chave' : 'Gerar chave';
+    $('chave-texto').textContent = c.tem_chave
+      ? `Você já tem uma chave, gerada em ${data(c.chave_criada_em)}. Gerar outra faz a antiga parar de valer.`
+      : 'Gere uma chave e guarde num lugar seguro (print, anotação). Com ela você cria uma senha nova sem precisar do suporte.';
+  }
 }
 
 $('f-senha').addEventListener('submit', async e => {
@@ -250,6 +308,73 @@ $('f-senha').addEventListener('submit', async e => {
   } catch (err) { m.textContent = err.message; }
   finally { b.disabled = false; b.textContent = 'Trocar a senha'; }
 });
+
+// esqueci a senha
+const tela = qual => { $('tela-entrar').hidden = qual !== 'entrar'; $('tela-recuperar').hidden = qual !== 'recuperar'; };
+$('ir-recuperar').onclick = e => { e.preventDefault(); $('r-u').value = $('u').value; tela('recuperar'); };
+$('voltar-entrar').onclick = e => { e.preventDefault(); tela('entrar'); };
+$('r-chave').addEventListener('input', e => {
+  const h = e.target.value.toUpperCase().replace(/[^0-9A-F]/g, '').slice(0, 20);
+  e.target.value = h.match(/.{1,5}/g)?.join('-') || '';
+});
+$('f-recuperar').addEventListener('submit', async e => {
+  e.preventDefault();
+  const m = $('m-recuperar'), b = $('b-recuperar'); m.className = 'msg'; m.textContent = '';
+  const u = $('r-u').value.trim().toLowerCase(), chave = $('r-chave').value, nova = $('r-nova').value;
+  if (!u || chave.replace(/-/g, '').length !== 20) { m.textContent = 'Preencha o login e a chave inteira (20 letras e números).'; return; }
+  if (nova !== $('r-nova2').value) { m.textContent = 'As duas senhas novas não são iguais.'; return; }
+  if (nova.length < 6) { m.textContent = MSG.senha_fraca; return; }
+  b.disabled = true; b.textContent = 'Criando…';
+  try {
+    const r = await rpc('pokeover_conta_recuperar', { p_usuario: u, p_chave: chave, p_nova: nova });
+    if (r.status !== 'ok') { m.textContent = r.status === 'invalido' ? 'Login ou chave não conferem.' : (MSG[r.status] || 'Não deu certo: ' + r.status); return; }
+    ['r-chave', 'r-nova', 'r-nova2'].forEach(id => ($(id).value = ''));
+    $('u').value = u; tela('entrar');
+    const me = $('m-entrar'); me.className = 'msg ok'; me.textContent = 'Senha nova criada. Entre com ela. A chave usada não vale mais: gere outra lá dentro.';
+  } catch (err) { m.textContent = err.message; }
+  finally { b.disabled = false; b.textContent = 'Criar a senha nova'; }
+});
+
+// trocar de PC
+$('f-pc').addEventListener('submit', async e => {
+  e.preventDefault();
+  const m = $('m-pc'), b = $('b-pc'); m.className = 'msg'; m.textContent = '';
+  if (!$('pc-senha').value) { m.textContent = 'Digite sua senha para confirmar.'; return; }
+  b.disabled = true; b.textContent = 'Soltando…';
+  try {
+    const r = await rpc('pokeover_conta_liberar_pc', { p_token: sessao.get(), p_senha: $('pc-senha').value });
+    if (r.status === 'sessao') { sessao.set(null); return mostrarEntrar(MSG.sessao); }
+    if (r.status === 'espera') { m.textContent = `Você trocou de PC há pouco. Libera de novo em ${data(r.libera_em, true)}.`; return; }
+    if (r.status === 'sem_pc') { m.textContent = 'Nenhum PC está ligado agora. O próximo login no programa liga o PC.'; return; }
+    if (r.status !== 'ok') { m.textContent = MSG[r.status] || 'Não deu certo: ' + r.status; return; }
+    $('pc-senha').value = '';
+    m.className = 'msg ok'; m.textContent = 'PC solto. Feche o PokeOver no PC antigo e entre no novo: ele fica ligado ao seu login.';
+    carregar();
+  } catch (err) { m.textContent = err.message; }
+  finally { b.disabled = false; b.textContent = 'Soltar o PC atual'; }
+});
+
+// chave de recuperação
+$('b-chave').onclick = async () => {
+  const m = $('m-chave'), b = $('b-chave'); m.className = 'msg'; m.textContent = '';
+  if (b.dataset.confirmar !== '1' && b.dataset.tem === '1') { b.dataset.confirmar = '1'; b.textContent = 'Gerar mesmo assim (a antiga para de valer)'; return; }
+  b.disabled = true;
+  try {
+    const r = await rpc('pokeover_conta_gerar_chave', { p_token: sessao.get() });
+    if (r.status === 'sessao') { sessao.set(null); return mostrarEntrar(MSG.sessao); }
+    if (r.status !== 'ok') { m.textContent = 'Não deu certo: ' + r.status; return; }
+    $('chave').textContent = r.chave; $('chave-caixa').hidden = false;
+    m.className = 'msg ok'; m.textContent = 'Guarde esta chave agora: ela aparece só esta vez.';
+    b.dataset.confirmar = ''; b.dataset.tem = '1'; b.textContent = 'Gerar outra chave';
+  } catch (err) { m.textContent = err.message; }
+  finally { b.disabled = false; }
+};
+$('copiar-chave').onclick = async () => {
+  const b = $('copiar-chave'), el = $('chave');
+  try { await navigator.clipboard.writeText(el.textContent); b.textContent = 'Copiado'; }
+  catch { const s = getSelection(), r = document.createRange(); r.selectNodeContents(el); s.removeAllRanges(); s.addRange(r); b.textContent = 'Selecionado'; }
+  setTimeout(() => (b.textContent = 'Copiar'), 1800);
+};
 
 $('sair').onclick = async () => { const t = sessao.get(); sessao.set(null); mostrarEntrar(); if (t) rpc('pokeover_conta_sair', { p_token: t }).catch(() => {}); };
 carregar();
