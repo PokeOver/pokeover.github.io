@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PokeOver · Área do cliente</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans+Condensed:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: mesma linguagem do placar. Entrar numa coluna estreita; depois, um "boletim" da conta: dias restantes enormes e uma ficha com plano, PC e pagamentos. */
+:root {
+  --papel: #0d1017; --painel: #151a24; --tinta: #e9ecf3; --suave: #c3c9d6; --cinza: #8e97a9;
+  --fio: #e6bb52; --fio-claro: #252c3b; --ouro: #e6bb52; --ouro-tinta: #1a1405; --roxo: #b48cff;
+  --verde: #5fd39a; --laranja: #ff8a5c;
+  --f-display: "Anton", Impact, "Arial Narrow", sans-serif;
+  --f-texto: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-num: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--papel); color: var(--tinta); font: 18px/1.5 var(--f-texto); }
+.faixa { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.miolo { max-width: 1160px; margin: 0 auto; }
+.num { font-family: var(--f-num); font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 3px solid var(--roxo); outline-offset: 2px; }
+[hidden] { display: none !important; }
+
+.topo { display: flex; align-items: baseline; gap: 18px; padding-block: 16px 12px; border-bottom: 6px solid var(--fio); }
+.logo { font: 400 30px/1 var(--f-display); text-transform: uppercase; color: var(--tinta); text-decoration: none; }
+.edicao { font: 500 13px/1 var(--f-num); color: var(--cinza); text-transform: uppercase; letter-spacing: .06em; }
+.topo .dir { margin-left: auto; display: flex; gap: 18px; align-items: baseline; }
+.topo .dir a, .topo .dir button { font: 600 15px/1 var(--f-texto); text-transform: uppercase; letter-spacing: .06em; color: var(--ouro); text-decoration: none; border: 0; border-bottom: 2px solid; background: none; padding: 0; cursor: pointer; }
+@media (max-width: 520px) { .edicao { display: none; } }
+
+h1 { font: 400 clamp(46px, 7vw, 92px)/.92 var(--f-display); text-transform: uppercase; margin: 36px 0 10px; }
+.lead { color: var(--suave); margin: 0 0 28px; max-width: 40em; }
+.cta { display: inline-block; background: var(--ouro); color: var(--ouro-tinta); text-decoration: none; font: 600 16px/1 var(--f-texto); text-transform: uppercase; letter-spacing: .08em; padding: 17px 22px; border: 0; cursor: pointer; text-align: center; }
+.cta:hover { background: var(--tinta); }
+.cta[disabled] { opacity: .6; cursor: wait; }
+.cta.linha { background: transparent; color: var(--tinta); border: 2px solid var(--cinza); }
+.cta.linha:hover { background: var(--tinta); color: var(--papel); border-color: var(--tinta); }
+
+/* entrar */
+.entrar { max-width: 460px; padding-bottom: 60px; }
+form { display: grid; border-top: 3px solid var(--fio); }
+.campo { display: grid; gap: 4px; padding: 14px 0; border-bottom: 1px solid var(--fio-claro); }
+.campo label { font: 600 12px/1 var(--f-texto); text-transform: uppercase; letter-spacing: .08em; color: var(--cinza); }
+.campo input { width: 100%; border: 0; border-bottom: 2px solid var(--cinza); padding: 8px 0; font: 500 20px var(--f-texto); background: transparent; color: var(--tinta); border-radius: 0; }
+.campo input:focus { outline: none; border-bottom-color: var(--roxo); }
+#u { font-family: var(--f-num); }
+form .cta { margin-top: 20px; width: 100%; }
+.msg { margin-top: 14px; font-size: 15.5px; color: var(--laranja); min-height: 1.4em; }
+.msg.ok { color: var(--verde); }
+.ajuda { margin-top: 24px; font-size: 15px; color: var(--cinza); }
+.ajuda a { color: var(--ouro); }
+
+/* boletim */
+.boletim { display: grid; grid-template-columns: 1.1fr 1fr; gap: 48px; padding-block: 8px 48px; border-bottom: 6px solid var(--fio); align-items: start; }
+.boletim > * { min-width: 0; }
+.chip { display: inline-block; font: 600 13px/1 var(--f-num); text-transform: uppercase; letter-spacing: .06em; padding: 7px 10px; }
+.chip.ok { background: #13301f; color: var(--verde); }
+.chip.ruim { background: #2a1712; color: var(--laranja); }
+.chip.aviso { background: #2b230e; color: var(--ouro); }
+.dias { font: 400 clamp(110px, 18vw, 220px)/.82 var(--f-display); color: var(--ouro); margin: 18px 0 6px; }
+.dias small { font: 500 22px var(--f-num); color: var(--cinza); margin-left: 10px; }
+.vence { color: var(--suave); font-size: 19px; margin: 0 0 18px; }
+.barra { height: 8px; background: var(--fio-claro); }
+.barra i { display: block; height: 100%; background: var(--ouro); }
+.barra-leg { display: flex; justify-content: space-between; font: 500 13px var(--f-num); color: var(--cinza); margin-top: 6px; }
+.ficha { list-style: none; margin: 0; padding: 0; border-top: 3px solid var(--fio); }
+.ficha li { display: flex; justify-content: space-between; gap: 16px; padding: 13px 0; border-bottom: 1px solid var(--fio-claro); }
+.ficha li span { color: var(--cinza); }
+.ficha li b { font-weight: 600; text-align: right; }
+.acoes { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.nota { color: var(--cinza); font-size: 15px; margin: 14px 0 0; }
+@media (max-width: 860px) { .boletim { grid-template-columns: 1fr; gap: 28px; } }
+
+.alerta { border: 2px solid var(--ouro); background: #1c1a10; padding: 16px 18px; margin: 0 0 28px; }
+.alerta b { color: var(--ouro); }
+
+.secao-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-block: 32px 10px; border-bottom: 3px solid var(--fio); }
+.secao-cab h2 { font: 400 28px/1 var(--f-display); text-transform: uppercase; margin: 0; }
+.secao-cab > span { font: 500 13px var(--f-num); color: var(--cinza); text-transform: uppercase; }
+.senha { max-width: 560px; padding-bottom: 40px; }
+.senha form { border-top: 0; }
+footer { padding-block: 24px 40px; font: 500 14px var(--f-num); color: var(--cinza); display: flex; flex-wrap: wrap; gap: 8px 28px; border-top: 6px solid var(--fio); }
+footer a { color: var(--ouro); }
+</style>
+</head>
+<body>
+<header class="faixa"><div class="miolo topo">
+  <a class="logo" href="index.html">PokeOver</a><span class="edicao">Área do cliente</span>
+  <span class="dir"><a href="index.html">Site</a><button type="button" id="sair" hidden>Sair</button></span>
+</div></header>
+
+<main class="faixa"><div class="miolo">
+  <!-- entrar -->
+  <section class="entrar" id="tela-entrar">
+    <h1>Entrar</h1>
+    <p class="lead">Use o mesmo login e senha do programa.</p>
+    <form id="f-entrar" novalidate>
+      <div class="campo"><label for="u">Login</label><input id="u" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="seunome"></div>
+      <div class="campo"><label for="s">Senha</label><input id="s" type="password" autocomplete="current-password" placeholder="••••••"></div>
+      <button class="cta" id="b-entrar" type="submit">Entrar</button>
+      <div class="msg" id="m-entrar" role="status"></div>
+    </form>
+    <p class="ajuda">Esqueceu a senha? Chame o suporte no WhatsApp <a href="https://wa.me/5522998692343" target="_blank" rel="noopener">(22) 99869-2343</a>. Ainda não tem login? <a href="index.html#assinar">Assine aqui</a>.</p>
+  </section>
+
+  <!-- conta -->
+  <div id="tela-conta" hidden>
+    <h1 id="titulo">Olá</h1>
+    <p class="lead" id="sub"></p>
+    <div class="alerta" id="alerta-senha" hidden><b>Você ainda usa a senha inicial 12345.</b> Troque abaixo ou no primeiro acesso pelo programa.</div>
+
+    <section class="boletim">
+      <div>
+        <span class="chip" id="chip"></span>
+        <div class="dias num" id="dias">0<small>dias</small></div>
+        <p class="vence" id="vence"></p>
+        <div id="bloco-barra"><div class="barra"><i id="barra" style="width:0%"></i></div><div class="barra-leg"><span>Hoje</span><span id="barra-fim"></span></div></div>
+        <div class="acoes">
+          <a class="cta" id="renovar" href="https://wa.me/5522998692343?text=Quero%20renovar%20meu%20PokeOver" target="_blank" rel="noopener">Renovar</a>
+          <a class="cta linha" href="https://www.dropbox.com/scl/fi/hlg3lhle9ghbw28eax42f/PokeOver-Setup.exe?rlkey=omvhivrjx4b4zjyeaos8uxfqg&amp;dl=1" target="_blank" rel="noopener">Baixar o PokeOver</a>
+        </div>
+        <p class="nota" id="nota-renovar"></p>
+      </div>
+      <ul class="ficha">
+        <li><span>Login</span><b class="num" id="f-login"></b></li>
+        <li><span>Plano</span><b id="f-plano"></b></li>
+        <li><span>Situação</span><b id="f-situacao"></b></li>
+        <li><span>Válido até</span><b class="num" id="f-ate"></b></li>
+        <li><span>PC</span><b id="f-pc"></b></li>
+        <li><span>PC visto por último</span><b id="f-visto"></b></li>
+        <li><span>Último login no programa</span><b id="f-login-prog"></b></li>
+        <li><span>Pagamentos pelo site</span><b id="f-pag"></b></li>
+        <li><span>Cliente desde</span><b class="num" id="f-desde"></b></li>
+      </ul>
+    </section>
+
+    <section class="senha">
+      <div class="secao-cab"><h2>Trocar a senha</h2><span>Vale no programa e no app</span></div>
+      <form id="f-senha" novalidate>
+        <div class="campo"><label for="atual">Senha atual</label><input id="atual" type="password" autocomplete="current-password"></div>
+        <div class="campo"><label for="nova">Senha nova</label><input id="nova" type="password" autocomplete="new-password" placeholder="6 caracteres ou mais"></div>
+        <div class="campo"><label for="nova2">Repita a senha nova</label><input id="nova2" type="password" autocomplete="new-password"></div>
+        <button class="cta" id="b-senha" type="submit">Trocar a senha</button>
+        <div class="msg" id="m-senha" role="status"></div>
+      </form>
+    </section>
+  </div>
+
+  <footer><span>PokeOver © 2026</span><span>Suporte no WhatsApp: <a href="https://wa.me/5522998692343" target="_blank" rel="noopener">(22) 99869-2343</a></span></footer>
+</div></main>
+
+<script>
+const SB = 'https://zkxvxzjukpzcudittziw.supabase.co', CHAVE = 'sb_publishable_2tJ-FHSqkDzPS3LCjbVgSg_BSkw38n6'; // chave pública (anon), a mesma do programa
+const $ = id => document.getElementById(id);
+const sessao = { get: () => { try { return sessionStorage.getItem('pokeover:conta'); } catch { return null; } },
+  set: v => { try { v ? sessionStorage.setItem('pokeover:conta', v) : sessionStorage.removeItem('pokeover:conta'); } catch {} } };
+const MSG = { invalido: 'Login ou senha não conferem.', bloqueado: 'Muitas tentativas erradas. Espere 15 minutos e tente de novo.',
+  senha_atual: 'A senha atual não confere.', senha_fraca: 'A senha nova precisa de 6 caracteres ou mais, diferente de 12345 e da atual.',
+  sessao: 'Sua sessão terminou. Entre de novo.' };
+
+async function rpc(f, corpo) {
+  let r;
+  try { r = await fetch(`${SB}/rest/v1/rpc/${f}`, { method: 'POST', headers: { apikey: CHAVE, 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) }); }
+  catch { throw new Error('Sem conexão. Confira sua internet e tente de novo.'); }
+  if (r.status === 404) throw new Error('A área do cliente ainda está sendo ligada. Tente mais tarde.');
+  if (!r.ok) throw new Error('O servidor não respondeu (' + r.status + ').');
+  return r.status === 204 ? {} : r.json();
+}
+const data = (iso, hora) => iso ? new Date(iso).toLocaleString('pt-BR', hora ? { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' } : { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+const ha = iso => { if (!iso) return 'Nunca'; const m = Math.round((Date.now() - new Date(iso)) / 60000);
+  return m < 2 ? 'Agora' : m < 60 ? `Há ${m} min` : m < 1440 ? `Há ${Math.round(m / 60)} h` : `Há ${Math.round(m / 1440)} dias`; };
+
+$('f-entrar').addEventListener('submit', async e => {
+  e.preventDefault();
+  const m = $('m-entrar'), b = $('b-entrar'); m.className = 'msg'; m.textContent = '';
+  const u = $('u').value.trim().toLowerCase(), s = $('s').value;
+  if (!u || !s) { m.textContent = 'Preencha o login e a senha.'; return; }
+  b.disabled = true; b.textContent = 'Entrando…';
+  try {
+    const r = await rpc('pokeover_conta_entrar', { p_usuario: u, p_senha: s });
+    if (r.status !== 'ok') { m.textContent = MSG[r.status] || 'Não deu certo: ' + r.status; return; }
+    sessao.set(r.token); $('s').value = ''; await carregar();
+  } catch (err) { m.textContent = err.message; }
+  finally { b.disabled = false; b.textContent = 'Entrar'; }
+});
+
+async function carregar() {
+  const t = sessao.get(); if (!t) return mostrarEntrar();
+  let c;
+  try { c = await rpc('pokeover_conta_ler', { p_token: t }); }
+  catch (err) { mostrarEntrar(err.message); return; }
+  if (c.status !== 'ok') { sessao.set(null); return mostrarEntrar(MSG[c.status]); }
+  pintar(c);
+}
+function mostrarEntrar(msg) { $('tela-conta').hidden = true; $('tela-entrar').hidden = false; $('sair').hidden = true; if (msg) $('m-entrar').textContent = msg; }
+
+function pintar(c) {
+  $('tela-entrar').hidden = true; $('tela-conta').hidden = false; $('sair').hidden = false;
+  const agora = new Date(c.agora).getTime(), fim = c.expira_em ? new Date(c.expira_em).getTime() : null;
+  const dias = fim == null ? null : Math.max(0, Math.ceil((fim - agora) / 86400000));
+  const vencido = fim != null && fim <= agora;
+  const plano = c.plano === 'completo' ? 'Completo' : 'Padrão';
+  $('titulo').textContent = 'Olá, ' + c.usuario;
+  $('sub').textContent = `Plano ${plano.toLowerCase()} · ${!c.ativo ? 'login desativado' : vencido ? 'acesso vencido' : fim == null ? 'acesso sem prazo' : 'acesso em dia'}.`;
+  const chip = $('chip');
+  if (!c.ativo) { chip.className = 'chip ruim'; chip.textContent = 'Desativado'; }
+  else if (vencido) { chip.className = 'chip ruim'; chip.textContent = 'Vencido'; }
+  else if (dias != null && dias <= 3) { chip.className = 'chip aviso'; chip.textContent = 'Vence logo'; }
+  else { chip.className = 'chip ok'; chip.textContent = 'Ativo'; }
+  $('dias').innerHTML = fim == null ? '∞<small>sem prazo</small>' : `${dias}<small>${dias === 1 ? 'dia' : 'dias'}</small>`;
+  $('vence').textContent = fim == null ? 'Seu acesso não tem data para acabar.' : vencido ? `Venceu em ${data(c.expira_em, true)}.` : `Vence em ${data(c.expira_em, true)}.`;
+  $('bloco-barra').hidden = fim == null;
+  if (fim != null) { $('barra').style.width = Math.min(100, Math.round(dias / 30 * 100)) + '%'; $('barra-fim').textContent = data(c.expira_em); }
+  $('renovar').hidden = fim == null && c.ativo;
+  $('renovar').textContent = vencido ? 'Renovar agora' : 'Renovar';
+  $('nota-renovar').textContent = c.assinatura
+    ? 'Sua assinatura renova sozinha: a cobrança de cada mês chega no seu email. Pagou, ganha mais 30 dias.'
+    : fim == null ? '' : 'Para renovar, chame o suporte no WhatsApp. Cada renovação soma 30 dias.';
+  $('f-login').textContent = c.usuario;
+  $('f-plano').textContent = plano;
+  $('f-situacao').textContent = !c.ativo ? 'Desativado' : vencido ? 'Vencido' : 'Ativo';
+  $('f-ate').textContent = fim == null ? 'Sem prazo' : data(c.expira_em, true);
+  $('f-pc').textContent = c.pc_preso ? `Ligado a um PC desde ${data(c.preso_em)}` : 'Nenhum ainda. Liga no primeiro login no programa';
+  $('f-visto').textContent = c.pc_visto_em ? ha(c.pc_visto_em) : '—';
+  $('f-login-prog').textContent = ha(c.ultimo_login);
+  $('f-pag').textContent = c.assinatura ? `${c.pagamentos} · último em ${data(c.ultimo_pagamento)}` : 'Nenhum';
+  $('f-desde').textContent = data(c.criado_em);
+  $('alerta-senha').hidden = !c.senha_inicial;
+}
+
+$('f-senha').addEventListener('submit', async e => {
+  e.preventDefault();
+  const m = $('m-senha'), b = $('b-senha'); m.className = 'msg'; m.textContent = '';
+  const atual = $('atual').value, nova = $('nova').value;
+  if (nova !== $('nova2').value) { m.textContent = 'As duas senhas novas não são iguais.'; return; }
+  if (nova.length < 6) { m.textContent = MSG.senha_fraca; return; }
+  b.disabled = true; b.textContent = 'Trocando…';
+  try {
+    const r = await rpc('pokeover_conta_trocar_senha', { p_token: sessao.get(), p_atual: atual, p_nova: nova });
+    if (r.status === 'sessao') { sessao.set(null); return mostrarEntrar(MSG.sessao); }
+    if (r.status !== 'ok') { m.textContent = MSG[r.status] || 'Não deu certo: ' + r.status; return; }
+    m.className = 'msg ok'; m.textContent = 'Senha trocada. Use a nova no programa e no app.';
+    ['atual', 'nova', 'nova2'].forEach(id => ($(id).value = '')); carregar();
+  } catch (err) { m.textContent = err.message; }
+  finally { b.disabled = false; b.textContent = 'Trocar a senha'; }
+});
+
+$('sair').onclick = async () => { const t = sessao.get(); sessao.set(null); mostrarEntrar(); if (t) rpc('pokeover_conta_sair', { p_token: t }).catch(() => {}); };
+carregar();
+</script>
+</body>
+</html>
