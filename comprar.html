@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PokeOver · Assinar</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans+Condensed:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: página só da compra, na linguagem do placar. Resumo do plano à esquerda, ficha de compra à direita; no celular, um embaixo do outro. */
+:root {
+  --papel: #0d1017;      /* fundo do programa */
+  --painel: #151a24;     /* cartões do programa */
+  --tinta: #e9ecf3;
+  --suave: #c3c9d6;
+  --cinza: #8e97a9;
+  --fio: #e6bb52;        /* fios grossos do placar, no dourado dos números do painel */
+  --fio-claro: #252c3b;
+  --ouro: #e6bb52;
+  --ouro-tinta: #1a1405;
+  --roxo: #b48cff;
+  --verde: #5fd39a;
+  --laranja: #ff8a5c;
+  --escuro: #0d1017;
+  --f-display: "Anton", Impact, "Arial Narrow", sans-serif;
+  --f-texto: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-num: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--papel); color: var(--tinta); font: 18px/1.5 var(--f-texto); }
+.faixa { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.miolo { max-width: 1160px; margin: 0 auto; }
+.num { font-family: var(--f-num); font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 3px solid var(--roxo); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+.topo { display: flex; align-items: baseline; gap: 18px; padding-block: 16px 12px; border-bottom: 6px solid var(--fio); }
+.logo { font: 400 30px/1 var(--f-display); letter-spacing: .01em; text-transform: uppercase; }
+.edicao { font: 500 13px/1 var(--f-num); color: var(--cinza); text-transform: uppercase; letter-spacing: .06em; }
+.topo a { margin-left: auto; font: 600 15px/1 var(--f-texto); text-transform: uppercase; letter-spacing: .06em; color: var(--ouro); text-decoration: none; border-bottom: 2px solid; }
+@media (max-width: 520px) { .edicao { display: none; } }
+
+.topo .dir { margin-left: auto; display: flex; gap: 18px; align-items: baseline; }
+.topo .dir a { margin-left: 0; }
+.topo a.logo { font: 400 30px/1 var(--f-display); letter-spacing: .01em; color: var(--tinta); border: 0; margin-left: 0; }
+h1 { font: 400 clamp(46px, 7vw, 92px)/.92 var(--f-display); text-transform: uppercase; margin: 36px 0 8px; }
+h1 .realce { color: var(--ouro); }
+.lead { color: var(--suave); margin: 0 0 8px; max-width: 42em; }
+.cta { display: inline-block; background: var(--ouro); color: var(--ouro-tinta); text-decoration: none; font: 600 16px/1 var(--f-texto); text-transform: uppercase; letter-spacing: .08em; padding: 16px 22px; border: 0; cursor: pointer; }
+.cta:hover { background: var(--tinta); }
+.secao-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-block: 32px 10px; border-bottom: 3px solid var(--fio); }
+.secao-cab h2 { font: 400 28px/1 var(--f-display); text-transform: uppercase; margin: 0; }
+.secao-cab > span { font: 500 13px var(--f-num); color: var(--cinza); text-transform: uppercase; text-align: right; }
+/* preço e compra */
+.preco { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; padding-block: 48px; border-bottom: 6px solid var(--fio); align-items: start; }
+.preco > * { min-width: 0; }
+.preco .valor { font: 400 clamp(90px, 14vw, 180px)/.85 var(--f-display); }
+.preco .valor small { font: 500 22px var(--f-num); color: var(--cinza); margin-left: 8px; }
+.preco ul { list-style: none; margin: 28px 0 0; padding: 0; border-top: 1px solid var(--fio); }
+.preco li { padding: 10px 0; border-bottom: 1px solid var(--fio-claro); display: flex; justify-content: space-between; gap: 12px; }
+.preco li b { font-weight: 600; text-align: right; }
+@media (max-width: 860px) { .preco { grid-template-columns: 1fr; gap: 32px; } }
+
+.ficha h3 { font: 400 28px/1 var(--f-display); text-transform: uppercase; margin: 0 0 6px; }
+.ficha > p { margin: 0 0 20px; color: var(--cinza); font-size: 16px; }
+form.campos { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; border-top: 3px solid var(--fio); }
+.campo { display: grid; gap: 4px; padding: 12px 0; border-bottom: 1px solid var(--fio-claro); min-width: 0; }
+.campo.largo { grid-column: 1 / -1; }
+.campo label { font: 600 12px/1 var(--f-texto); text-transform: uppercase; letter-spacing: .08em; color: var(--cinza); }
+.campo input { width: 100%; border: 0; border-bottom: 2px solid var(--cinza); padding: 8px 0; font: 500 19px var(--f-texto); background: transparent; color: var(--tinta); border-radius: 0; }
+.campo input:focus { outline: none; border-bottom-color: var(--roxo); }
+.campo input#usuario { font-family: var(--f-num); }
+.dica { font-size: 13.5px; color: var(--cinza); min-height: 1.3em; }
+.dica.ok { color: var(--verde); } .dica.ruim { color: var(--laranja); }
+.erro { grid-column: 1 / -1; color: var(--laranja); background: #2a1712; padding: 10px 12px; font-size: 15px; margin-top: 12px; }
+.rodape-form { grid-column: 1 / -1; display: grid; gap: 10px; padding-top: 18px; }
+.rodape-form .cta { width: 100%; padding: 19px; font-size: 17px; }
+.rodape-form .cta:hover { background: var(--tinta); }
+.rodape-form .cta[disabled] { opacity: .6; cursor: wait; }
+.rodape-form small { color: var(--cinza); font-size: 14px; }
+@media (max-width: 520px) { form.campos { grid-template-columns: 1fr; } }
+
+.passos { list-style: none; margin: 0 0 18px; padding: 0; border-top: 3px solid var(--fio); }
+.passos li { display: grid; grid-template-columns: 44px 1fr; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--fio-claro); color: var(--cinza); }
+.passos li b { font: 400 26px/1 var(--f-display); }
+.passos li.feito { color: var(--tinta); } .passos li.feito b { color: var(--verde); }
+.passos li.agora { color: var(--tinta); } .passos li.agora b { color: var(--ouro); }
+.credencial { display: grid; grid-template-columns: auto 1fr auto; gap: 10px 14px; align-items: center; border: 2px solid var(--fio); background: var(--painel); padding: 16px; margin-bottom: 14px; }
+.credencial dt { font: 600 12px var(--f-texto); text-transform: uppercase; letter-spacing: .08em; color: var(--cinza); }
+.credencial dd { margin: 0; font: 600 20px var(--f-num); overflow-wrap: anywhere; }
+.copiar { border: 1px solid var(--cinza); background: var(--painel); color: var(--tinta); font: 600 13px var(--f-texto); text-transform: uppercase; padding: 6px 10px; cursor: pointer; }
+.aviso-senha { font-size: 15px; color: var(--cinza); margin: 0 0 16px; }
+.acoes { display: flex; flex-wrap: wrap; gap: 10px; }
+.cta.linha { background: transparent; color: var(--tinta); border: 2px solid var(--cinza); }
+.cta.linha:hover { background: var(--tinta); color: var(--papel); border-color: var(--tinta); }
+.preco { border-top: 3px solid var(--fio); margin-top: 24px; }
+.preco .acoes .cta { text-align: center; }
+footer { padding-block: 24px 40px; font: 500 14px var(--f-num); color: var(--cinza); display: flex; flex-wrap: wrap; gap: 8px 28px; border-top: 6px solid var(--fio); }
+footer a { color: var(--ouro); }
+</style>
+</head>
+<body>
+<header class="faixa"><div class="miolo topo">
+  <a class="logo" href="index.html" style="color:inherit;text-decoration:none;border:0">PokeOver</a><span class="edicao">Assinatura</span>
+  <span class="dir"><a href="index.html">Voltar ao site</a><a href="conta.html">Área do cliente</a></span>
+</div></header>
+
+<main class="faixa"><div class="miolo">
+  <h1>Assinar o <span class="realce">PokeOver</span></h1>
+  <p class="lead">Preencha os dados, pague na fatura do Asaas e receba o login na hora, aqui e no seu email.</p>
+  <section class="preco" id="assinar">
+    <div>
+      <div class="valor num">R$15<small>/mês</small></div>
+      <ul>
+        <li><span>Contas</span><b>Até 4, num PC</b></li>
+        <li><span>Pagamento</span><b>Pix, cartão ou boleto</b></li>
+        <li><span>Entrega do login</span><b>Na hora, na tela e por email</b></li>
+        <li><span>Renovação</span><b>Cobrança por email todo mês</b></li>
+        <li><span>Fidelidade</span><b>Nenhuma</b></li>
+      </ul>
+    </div>
+
+    <div class="ficha">
+      <div id="etapa-form">
+        <h3>Assinar</h3>
+        <p>Seus dados vão só para a cobrança, feita pelo Asaas.</p>
+        <form class="campos" id="form" novalidate>
+          <div class="campo largo"><label for="nome">Nome completo</label><input id="nome" autocomplete="name" placeholder="Maria da Silva"></div>
+          <div class="campo"><label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="voce@email.com"><span class="dica">A cobrança de cada mês chega aqui.</span></div>
+          <div class="campo"><label for="cpf">CPF</label><input id="cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" maxlength="14"><span class="dica" id="dica-cpf">Exigido para emitir a cobrança.</span></div>
+          <div class="campo largo"><label for="usuario">Login que você quer no PokeOver</label><input id="usuario" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="seunome" maxlength="20"><span class="dica" id="dica-usuario">De 3 a 20 letras, números ou _.</span></div>
+          <div class="erro" id="erro" hidden></div>
+          <div class="rodape-form">
+            <button class="cta" id="pagar" type="submit">Continuar para o pagamento</button>
+            <small>Abre a fatura do Asaas, onde você escolhe Pix, cartão ou boleto.</small>
+          </div>
+        </form>
+      </div>
+
+      <div id="etapa-pedido" hidden>
+        <h3 id="pedido-titulo">Aguardando o pagamento</h3>
+        <p id="pedido-texto" style="color:var(--cinza);margin:0 0 18px">Pague na fatura que abriu em outra aba. Esta página atualiza sozinha quando o pagamento for confirmado.</p>
+        <ol class="passos">
+          <li class="feito" id="p1"><b>1</b><span>Pedido criado</span></li>
+          <li class="agora" id="p2"><b>2</b><span>Pagamento confirmado</span></li>
+          <li id="p3"><b>3</b><span>Login pronto para usar</span></li>
+        </ol>
+        <div id="pedido-pago" hidden>
+          <dl class="credencial">
+            <dt>Login</dt><dd id="cred-usuario">—</dd><button class="copiar" type="button" data-copiar="cred-usuario">Copiar</button>
+            <dt>Senha</dt><dd id="cred-senha">12345</dd><button class="copiar" type="button" data-copiar="cred-senha" id="copiar-senha">Copiar</button>
+          </dl>
+          <p class="aviso-senha" id="aviso-senha">No primeiro acesso o PokeOver pede uma senha nova só sua, e o login fica ligado a esse PC.</p>
+          <div class="acoes"><a class="cta" href="https://www.dropbox.com/scl/fi/hlg3lhle9ghbw28eax42f/PokeOver-Setup.exe?rlkey=omvhivrjx4b4zjyeaos8uxfqg&amp;dl=1" target="_blank" rel="noopener">Baixar para Windows</a><a class="cta linha" href="https://pokeover.github.io/app/PokeOver.apk" rel="noopener">App do celular (Android)</a></div>
+          <p class="aviso-senha" style="margin-top:14px">Os mesmos dados também foram para o seu email.</p>
+        </div>
+        <div class="acoes" id="pedido-acoes" style="margin-top:12px">
+          <a class="cta" id="abrir-fatura" href="#" target="_blank" rel="noopener">Abrir a fatura</a>
+          <button class="cta linha" id="novo-pedido" type="button">Fazer outro pedido</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer><span>PokeOver © 2026</span><span>Pagamentos pelo Asaas</span><span>Suporte no WhatsApp: <a href="https://wa.me/5522998692343" target="_blank" rel="noopener">(22) 99869-2343</a></span></footer>
+</div></main>
+
+<script>
+const API = 'https://zkxvxzjukpzcudittziw.supabase.co/functions/v1/pokeover-venda';
+const $ = id => document.getElementById(id);
+const guardar = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} };
+const ler = k => { try { return localStorage.getItem(k); } catch { return null; } };
+
+async function chamar(corpo) {
+  let r;
+  try { r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) }); }
+  catch { throw new Error('Não foi possível falar com o servidor. Confira sua internet e tente de novo.'); }
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.erro || 'Algo deu errado, tente de novo.');
+  return d;
+}
+
+function cpfValido(c) {
+  if (!/^\d{11}$/.test(c) || /^(\d)\1{10}$/.test(c)) return false;
+  for (const t of [9, 10]) { let s = 0; for (let i = 0; i < t; i++) s += +c[i] * (t + 1 - i); if (((s * 10) % 11) % 10 !== +c[t]) return false; }
+  return true;
+}
+$('cpf').addEventListener('input', e => {
+  const d = e.target.value.replace(/\D/g, '').slice(0, 11);
+  e.target.value = d.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})\.(\d{3})(\d)/, '$1.$2.$3').replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, '$1.$2.$3-$4');
+  const dica = $('dica-cpf');
+  if (d.length === 11) { const ok = cpfValido(d); dica.textContent = ok ? 'CPF válido.' : 'Esse CPF não confere, verifique os números.'; dica.className = 'dica ' + (ok ? 'ok' : 'ruim'); }
+  else { dica.textContent = 'Exigido para emitir a cobrança.'; dica.className = 'dica'; }
+});
+
+let checagem;
+$('usuario').addEventListener('input', e => {
+  const v = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+  if (v !== e.target.value) e.target.value = v;
+  const dica = $('dica-usuario');
+  clearTimeout(checagem);
+  if (v.length < 3) { dica.textContent = 'De 3 a 20 letras, números ou _.'; dica.className = 'dica'; return; }
+  dica.textContent = 'Conferindo…'; dica.className = 'dica';
+  checagem = setTimeout(async () => {
+    try {
+      const { livre } = await chamar({ acao: 'livre', usuario: v });
+      if ($('usuario').value !== v) return;
+      dica.textContent = livre ? 'Esse login está livre.' : 'Esse login já está em uso, escolha outro.';
+      dica.className = 'dica ' + (livre ? 'ok' : 'ruim');
+    } catch { dica.textContent = 'Não deu para conferir agora; a gente confere ao pagar.'; dica.className = 'dica'; }
+  }, 450);
+});
+
+$('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const erro = $('erro'); erro.hidden = true;
+  const dados = { acao: 'comprar', nome: $('nome').value.trim(), email: $('email').value.trim(), cpf: $('cpf').value.replace(/\D/g, ''), usuario: $('usuario').value.trim() };
+  const falha = dados.nome.length < 3 ? 'Digite seu nome completo.' : !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(dados.email) ? 'Confira o email.' :
+    !cpfValido(dados.cpf) ? 'Confira o CPF.' : !/^[a-z0-9_]{3,20}$/.test(dados.usuario) ? 'O login deve ter de 3 a 20 letras, números ou _.' : '';
+  if (falha) { erro.textContent = falha; erro.hidden = false; return; }
+  const botao = $('pagar'); botao.disabled = true; botao.textContent = 'Criando a cobrança…';
+  const aba = window.open('', '_blank');
+  try {
+    const r = await chamar(dados);
+    guardar('pokeover:pedido', r.token);
+    if (aba && r.fatura) aba.location = r.fatura; else if (aba) aba.close();
+    mostrarPedido(r.token, { estado: 'aguardando', fatura: r.fatura, usuario: dados.usuario });
+  } catch (err) {
+    if (aba) aba.close();
+    erro.textContent = err.message; erro.hidden = false;
+  } finally { botao.disabled = false; botao.textContent = 'Continuar para o pagamento'; }
+});
+
+let relogio;
+function pintar(p) {
+  const pago = p.estado === 'pago' && p.login;
+  $('p2').className = pago ? 'feito' : 'agora';
+  $('p3').className = pago ? 'feito' : '';
+  $('pedido-titulo').textContent = pago ? 'Pronto, seu login chegou' : 'Aguardando o pagamento';
+  $('pedido-texto').textContent = pago
+    ? 'Guarde estes dados. Instale o PokeOver, entre com eles e escolha sua senha.'
+    : 'Pague na fatura que abriu em outra aba. Esta página atualiza sozinha quando o pagamento for confirmado (no Pix leva poucos segundos).';
+  $('pedido-pago').hidden = !pago;
+  $('abrir-fatura').hidden = pago || !p.fatura;
+  if (p.fatura) $('abrir-fatura').href = p.fatura;
+  if (pago) {
+    $('cred-usuario').textContent = p.usuario;
+    const temSenha = !!p.senha_inicial;
+    $('cred-senha').textContent = temSenha ? p.senha_inicial : 'A que você escolheu';
+    $('copiar-senha').hidden = !temSenha;
+    $('aviso-senha').hidden = !temSenha;
+  }
+  return pago;
+}
+function mostrarPedido(token, inicial) {
+  $('etapa-form').hidden = true; $('etapa-pedido').hidden = false;
+  if (inicial) pintar(inicial);
+  clearInterval(relogio);
+  const conferir = async () => {
+    try { const p = await chamar({ acao: 'pedido', token }); if (pintar(p)) clearInterval(relogio); }
+    catch (e) { if (/não encontrado/i.test(e.message)) { clearInterval(relogio); guardar('pokeover:pedido', null); voltarAoForm(); } }
+  };
+  conferir(); relogio = setInterval(conferir, 5000);
+}
+function voltarAoForm() { clearInterval(relogio); $('etapa-pedido').hidden = true; $('etapa-form').hidden = false; }
+$('novo-pedido').addEventListener('click', () => { guardar('pokeover:pedido', null); voltarAoForm(); });
+
+document.querySelectorAll('[data-copiar]').forEach(b => b.addEventListener('click', async () => {
+  const el = $(b.dataset.copiar);
+  try { await navigator.clipboard.writeText(el.textContent); b.textContent = 'Copiado'; }
+  catch { const s = getSelection(), r = document.createRange(); r.selectNodeContents(el); s.removeAllRanges(); s.addRange(r); b.textContent = 'Selecionado'; }
+  setTimeout(() => (b.textContent = 'Copiar'), 1800);
+}));
+
+const doLink = new URLSearchParams(location.search).get('pedido');
+const pedidoAberto = (doLink && /^[0-9a-f]{32}$/.test(doLink)) ? doLink : ler('pokeover:pedido');
+if (pedidoAberto) mostrarPedido(pedidoAberto);
+</script>
+</body>
+</html>

@@ -147,6 +147,11 @@ form.campos { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; border
 .acoes { display: flex; flex-wrap: wrap; gap: 10px; }
 .cta.linha { background: transparent; color: var(--tinta); border: 2px solid var(--cinza); }
 .cta.linha:hover { background: var(--tinta); color: var(--papel); border-color: var(--tinta); }
+.chamada { border-top: 3px solid var(--fio); padding-top: 18px; }
+.chamada > p { color: var(--suave); font-size: 17px; }
+.cta.grande { display: block; text-align: center; padding: 22px; font-size: 18px; }
+.chamada .pequeno { font-size: 15px; color: var(--cinza); margin-top: 16px; }
+.chamada .pequeno a { color: var(--ouro); }
 
 .perguntas { padding-block: 8px 40px; }
 details { border-bottom: 1px solid var(--fio-claro); }
@@ -203,7 +208,7 @@ body { overflow-x: clip; }
     <h1>Qual conta <span class="realce">rende</span> mais?</h1>
     <div>
       <p>O PokeOver junta suas 4 contas numa janela e mostra EXP, kills e gold por hora de cada uma. Daí em diante, escolher a hunt vira questão de olhar o placar.</p>
-      <a class="cta" href="#assinar">Assinar por R$ 15/mês</a>
+      <a class="cta" href="comprar.html">Assinar por R$ 15/mês</a>
     </div>
   </section>
 
@@ -276,50 +281,17 @@ body { overflow-x: clip; }
       <ul>
         <li><span>Contas</span><b>Até 4, num PC</b></li>
         <li><span>Pagamento</span><b>Pix, cartão ou boleto</b></li>
-        <li><span>Entrega do login</span><b>Na hora, nesta página</b></li>
+        <li><span>Entrega do login</span><b>Na hora, na tela e por email</b></li>
         <li><span>Renovação</span><b>Cobrança por email todo mês</b></li>
         <li><span>Fidelidade</span><b>Nenhuma</b></li>
       </ul>
     </div>
 
-    <div class="ficha">
-      <div id="etapa-form">
-        <h3>Assinar</h3>
-        <p>Seus dados vão só para a cobrança, feita pelo Asaas.</p>
-        <form class="campos" id="form" novalidate>
-          <div class="campo largo"><label for="nome">Nome completo</label><input id="nome" autocomplete="name" placeholder="Maria da Silva"></div>
-          <div class="campo"><label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="voce@email.com"><span class="dica">A cobrança de cada mês chega aqui.</span></div>
-          <div class="campo"><label for="cpf">CPF</label><input id="cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" maxlength="14"><span class="dica" id="dica-cpf">Exigido para emitir a cobrança.</span></div>
-          <div class="campo largo"><label for="usuario">Login que você quer no PokeOver</label><input id="usuario" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="seunome" maxlength="20"><span class="dica" id="dica-usuario">De 3 a 20 letras, números ou _.</span></div>
-          <div class="erro" id="erro" hidden></div>
-          <div class="rodape-form">
-            <button class="cta" id="pagar" type="submit">Continuar para o pagamento</button>
-            <small>Abre a fatura do Asaas, onde você escolhe Pix, cartão ou boleto.</small>
-          </div>
-        </form>
-      </div>
-
-      <div id="etapa-pedido" hidden>
-        <h3 id="pedido-titulo">Aguardando o pagamento</h3>
-        <p id="pedido-texto" style="color:var(--cinza);margin:0 0 18px">Pague na fatura que abriu em outra aba. Esta página atualiza sozinha quando o pagamento for confirmado.</p>
-        <ol class="passos">
-          <li class="feito" id="p1"><b>1</b><span>Pedido criado</span></li>
-          <li class="agora" id="p2"><b>2</b><span>Pagamento confirmado</span></li>
-          <li id="p3"><b>3</b><span>Login pronto para usar</span></li>
-        </ol>
-        <div id="pedido-pago" hidden>
-          <dl class="credencial">
-            <dt>Login</dt><dd id="cred-usuario">—</dd><button class="copiar" type="button" data-copiar="cred-usuario">Copiar</button>
-            <dt>Senha</dt><dd id="cred-senha">12345</dd><button class="copiar" type="button" data-copiar="cred-senha" id="copiar-senha">Copiar</button>
-          </dl>
-          <p class="aviso-senha" id="aviso-senha">No primeiro acesso o PokeOver pede uma senha nova só sua, e o login fica ligado a esse PC.</p>
-          <div class="acoes"><a class="cta" href="https://www.dropbox.com/scl/fi/hlg3lhle9ghbw28eax42f/PokeOver-Setup.exe?rlkey=omvhivrjx4b4zjyeaos8uxfqg&amp;dl=1" target="_blank" rel="noopener">Baixar para Windows</a></div>
-        </div>
-        <div class="acoes" id="pedido-acoes" style="margin-top:12px">
-          <a class="cta" id="abrir-fatura" href="#" target="_blank" rel="noopener">Abrir a fatura</a>
-          <button class="cta linha" id="novo-pedido" type="button">Fazer outro pedido</button>
-        </div>
-      </div>
+    <div class="ficha chamada">
+      <h3>Pronto para começar?</h3>
+      <p>Leva 2 minutos: nome, email e o login que você quer. Pagou, o login aparece na tela e chega no seu email.</p>
+      <a class="cta grande" href="comprar.html">Assinar por R$ 15/mês</a>
+      <p class="pequeno">Já é cliente? Veja seus dias e troque a senha na <a href="conta.html">área do cliente</a>.</p>
     </div>
   </section>
 
@@ -336,115 +308,9 @@ body { overflow-x: clip; }
 </div></div>
 
 <script>
-const API = 'https://zkxvxzjukpzcudittziw.supabase.co/functions/v1/pokeover-venda';
 const $ = id => document.getElementById(id);
-const guardar = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} };
-const ler = k => { try { return localStorage.getItem(k); } catch { return null; } };
-
-async function chamar(corpo) {
-  let r;
-  try { r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) }); }
-  catch { throw new Error('Não foi possível falar com o servidor. Confira sua internet e tente de novo.'); }
-  const d = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(d.erro || 'Algo deu errado, tente de novo.');
-  return d;
-}
-
-function cpfValido(c) {
-  if (!/^\d{11}$/.test(c) || /^(\d)\1{10}$/.test(c)) return false;
-  for (const t of [9, 10]) { let s = 0; for (let i = 0; i < t; i++) s += +c[i] * (t + 1 - i); if (((s * 10) % 11) % 10 !== +c[t]) return false; }
-  return true;
-}
-$('cpf').addEventListener('input', e => {
-  const d = e.target.value.replace(/\D/g, '').slice(0, 11);
-  e.target.value = d.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})\.(\d{3})(\d)/, '$1.$2.$3').replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, '$1.$2.$3-$4');
-  const dica = $('dica-cpf');
-  if (d.length === 11) { const ok = cpfValido(d); dica.textContent = ok ? 'CPF válido.' : 'Esse CPF não confere, verifique os números.'; dica.className = 'dica ' + (ok ? 'ok' : 'ruim'); }
-  else { dica.textContent = 'Exigido para emitir a cobrança.'; dica.className = 'dica'; }
-});
-
-let checagem;
-$('usuario').addEventListener('input', e => {
-  const v = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
-  if (v !== e.target.value) e.target.value = v;
-  const dica = $('dica-usuario');
-  clearTimeout(checagem);
-  if (v.length < 3) { dica.textContent = 'De 3 a 20 letras, números ou _.'; dica.className = 'dica'; return; }
-  dica.textContent = 'Conferindo…'; dica.className = 'dica';
-  checagem = setTimeout(async () => {
-    try {
-      const { livre } = await chamar({ acao: 'livre', usuario: v });
-      if ($('usuario').value !== v) return;
-      dica.textContent = livre ? 'Esse login está livre.' : 'Esse login já está em uso, escolha outro.';
-      dica.className = 'dica ' + (livre ? 'ok' : 'ruim');
-    } catch { dica.textContent = 'Não deu para conferir agora; a gente confere ao pagar.'; dica.className = 'dica'; }
-  }, 450);
-});
-
-$('form').addEventListener('submit', async e => {
-  e.preventDefault();
-  const erro = $('erro'); erro.hidden = true;
-  const dados = { acao: 'comprar', nome: $('nome').value.trim(), email: $('email').value.trim(), cpf: $('cpf').value.replace(/\D/g, ''), usuario: $('usuario').value.trim() };
-  const falha = dados.nome.length < 3 ? 'Digite seu nome completo.' : !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(dados.email) ? 'Confira o email.' :
-    !cpfValido(dados.cpf) ? 'Confira o CPF.' : !/^[a-z0-9_]{3,20}$/.test(dados.usuario) ? 'O login deve ter de 3 a 20 letras, números ou _.' : '';
-  if (falha) { erro.textContent = falha; erro.hidden = false; return; }
-  const botao = $('pagar'); botao.disabled = true; botao.textContent = 'Criando a cobrança…';
-  const aba = window.open('', '_blank');
-  try {
-    const r = await chamar(dados);
-    guardar('pokeover:pedido', r.token);
-    if (aba && r.fatura) aba.location = r.fatura; else if (aba) aba.close();
-    mostrarPedido(r.token, { estado: 'aguardando', fatura: r.fatura, usuario: dados.usuario });
-  } catch (err) {
-    if (aba) aba.close();
-    erro.textContent = err.message; erro.hidden = false;
-  } finally { botao.disabled = false; botao.textContent = 'Continuar para o pagamento'; }
-});
-
-let relogio;
-function pintar(p) {
-  const pago = p.estado === 'pago' && p.login;
-  $('p2').className = pago ? 'feito' : 'agora';
-  $('p3').className = pago ? 'feito' : '';
-  $('pedido-titulo').textContent = pago ? 'Pronto, seu login chegou' : 'Aguardando o pagamento';
-  $('pedido-texto').textContent = pago
-    ? 'Guarde estes dados. Instale o PokeOver, entre com eles e escolha sua senha.'
-    : 'Pague na fatura que abriu em outra aba. Esta página atualiza sozinha quando o pagamento for confirmado (no Pix leva poucos segundos).';
-  $('pedido-pago').hidden = !pago;
-  $('abrir-fatura').hidden = pago || !p.fatura;
-  if (p.fatura) $('abrir-fatura').href = p.fatura;
-  if (pago) {
-    $('cred-usuario').textContent = p.usuario;
-    const temSenha = !!p.senha_inicial;
-    $('cred-senha').textContent = temSenha ? p.senha_inicial : 'A que você escolheu';
-    $('copiar-senha').hidden = !temSenha;
-    $('aviso-senha').hidden = !temSenha;
-  }
-  return pago;
-}
-function mostrarPedido(token, inicial) {
-  $('etapa-form').hidden = true; $('etapa-pedido').hidden = false;
-  if (inicial) pintar(inicial);
-  clearInterval(relogio);
-  const conferir = async () => {
-    try { const p = await chamar({ acao: 'pedido', token }); if (pintar(p)) clearInterval(relogio); }
-    catch (e) { if (/não encontrado/i.test(e.message)) { clearInterval(relogio); guardar('pokeover:pedido', null); voltarAoForm(); } }
-  };
-  conferir(); relogio = setInterval(conferir, 5000);
-}
-function voltarAoForm() { clearInterval(relogio); $('etapa-pedido').hidden = true; $('etapa-form').hidden = false; }
-$('novo-pedido').addEventListener('click', () => { guardar('pokeover:pedido', null); voltarAoForm(); });
-
-document.querySelectorAll('[data-copiar]').forEach(b => b.addEventListener('click', async () => {
-  const el = $(b.dataset.copiar);
-  try { await navigator.clipboard.writeText(el.textContent); b.textContent = 'Copiado'; }
-  catch { const s = getSelection(), r = document.createRange(); r.selectNodeContents(el); s.removeAllRanges(); s.addRange(r); b.textContent = 'Selecionado'; }
-  setTimeout(() => (b.textContent = 'Copiar'), 1800);
-}));
-
-const doLink = new URLSearchParams(location.search).get('pedido');
-const pedidoAberto = (doLink && /^[0-9a-f]{32}$/.test(doLink)) ? doLink : ler('pokeover:pedido');
-if (pedidoAberto) mostrarPedido(pedidoAberto);
+// links antigos de pedido (?pedido=…) agora abrem na página de compra
+{ const p = new URLSearchParams(location.search).get('pedido'); if (p) location.replace('comprar.html?pedido=' + encodeURIComponent(p)); }
 
 // ---------- movimento ----------
 (() => {
