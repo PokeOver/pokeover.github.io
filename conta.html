@@ -114,7 +114,22 @@ footer a { color: var(--ouro); }
       <button class="cta" id="b-entrar" type="submit">Entrar</button>
       <div class="msg" id="m-entrar" role="status"></div>
     </form>
-    <p class="ajuda"><a href="#" id="ir-recuperar">Esqueci a senha</a> · Ainda não tem login? <a href="index.html#assinar">Assine aqui</a>.</p>
+    <p class="ajuda"><a href="#" id="ir-recuperar">Esqueci a senha</a> · Não tem conta? <a href="#criar" id="ir-criar">Criar conta e testar 3 horas grátis</a>.</p>
+  </section>
+
+  <!-- criar conta (sem comprar): ganha o teste de 3 horas no primeiro acesso pelo programa -->
+  <section class="entrar" id="tela-criar" hidden>
+    <h1>Criar conta</h1>
+    <p class="lead">Crie seu login e teste o PokeOver por 3 horas, sem pagar nada. O teste começa no primeiro acesso pelo programa e vale uma vez por PC.</p>
+    <form id="f-criar" novalidate>
+      <div class="campo"><label for="c-u">Login</label><input id="c-u" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="seunome" maxlength="20"></div>
+      <div class="campo"><label for="c-email">Email</label><input id="c-email" type="email" autocomplete="email" placeholder="voce@email.com"></div>
+      <div class="campo"><label for="c-s">Senha</label><input id="c-s" type="password" autocomplete="new-password" placeholder="6 caracteres ou mais"></div>
+      <div class="campo"><label for="c-s2">Repita a senha</label><input id="c-s2" type="password" autocomplete="new-password"></div>
+      <button class="cta" id="b-criar" type="submit">Criar conta</button>
+      <div class="msg" id="m-criar" role="status"></div>
+    </form>
+    <p class="ajuda">Já tem conta? <a href="#" id="ir-entrar">Entrar</a></p>
   </section>
 
   <!-- recuperar a senha por código no email -->
@@ -150,7 +165,7 @@ footer a { color: var(--ouro); }
         <p class="vence" id="vence"></p>
         <div id="bloco-barra"><div class="barra"><i id="barra" style="width:0%"></i></div><div class="barra-leg"><span>Hoje</span><span id="barra-fim"></span></div></div>
         <div class="acoes">
-          <a class="cta" id="renovar" href="https://wa.me/5522998692343?text=Quero%20renovar%20meu%20PokeOver" target="_blank" rel="noopener">Renovar</a>
+          <a class="cta" id="renovar" href="comprar.html">Renovar</a>
           <a class="cta linha" href="https://www.dropbox.com/scl/fi/hlg3lhle9ghbw28eax42f/PokeOver-Setup.exe?rlkey=omvhivrjx4b4zjyeaos8uxfqg&amp;dl=1" target="_blank" rel="noopener">Baixar o PokeOver</a>
           <a class="cta linha" href="https://pokeover.github.io/app/PokeOver.apk" rel="noopener">App do celular</a>
         </div>
@@ -249,33 +264,45 @@ async function carregar() {
   if (c.status !== 'ok') { sessao.set(null); return mostrarEntrar(MSG[c.status]); }
   pintar(c);
 }
-function mostrarEntrar(msg) { $('tela-conta').hidden = true; $('tela-recuperar').hidden = true; $('tela-entrar').hidden = false; $('sair').hidden = true; if (msg) $('m-entrar').textContent = msg; }
+function mostrarEntrar(msg) { $('tela-conta').hidden = true; $('tela-recuperar').hidden = true; $('tela-criar').hidden = true; $('tela-entrar').hidden = false; $('sair').hidden = true; if (msg) $('m-entrar').textContent = msg; }
 
 function pintar(c) {
-  $('tela-entrar').hidden = true; $('tela-recuperar').hidden = true; $('tela-conta').hidden = false; $('sair').hidden = false;
+  $('tela-entrar').hidden = true; $('tela-recuperar').hidden = true; $('tela-criar').hidden = true; $('tela-conta').hidden = false; $('sair').hidden = false;
   const agora = new Date(c.agora).getTime(), fim = c.expira_em ? new Date(c.expira_em).getTime() : null;
   const dias = fim == null ? null : Math.max(0, Math.ceil((fim - agora) / 86400000));
   const vencido = fim != null && fim <= agora;
-  const plano = c.plano === 'completo' ? 'Completo' : 'Padrão';
+  const semPlano = c.ativo && c.pode_testar && vencido;          // conta do site que ainda não testou
+  const emTeste = c.ativo && c.em_teste && !vencido;
+  const testeAcabou = c.ativo && c.origem === 'site' && c.teste_em && !c.assinatura && vencido;
+  const plano = semPlano ? 'Sem plano' : emTeste ? 'Teste grátis' : c.plano === 'completo' ? 'Completo' : 'Padrão';
   $('titulo').textContent = 'Olá, ' + c.usuario;
-  $('sub').textContent = `Plano ${plano.toLowerCase()} · ${!c.ativo ? 'login desativado' : vencido ? 'acesso vencido' : fim == null ? 'acesso sem prazo' : 'acesso em dia'}.`;
+  $('sub').textContent = semPlano ? 'Conta criada · teste grátis de 3 horas disponível.' : emTeste ? 'Você está no teste grátis.' : testeAcabou ? 'Seu teste grátis terminou.'
+    : `Plano ${plano.toLowerCase()} · ${!c.ativo ? 'login desativado' : vencido ? 'acesso vencido' : fim == null ? 'acesso sem prazo' : 'acesso em dia'}.`;
   const chip = $('chip');
   if (!c.ativo) { chip.className = 'chip ruim'; chip.textContent = 'Desativado'; }
+  else if (semPlano) { chip.className = 'chip aviso'; chip.textContent = 'Sem plano'; }
+  else if (emTeste) { chip.className = 'chip aviso'; chip.textContent = 'Teste grátis'; }
+  else if (testeAcabou) { chip.className = 'chip ruim'; chip.textContent = 'Teste acabou'; }
   else if (vencido) { chip.className = 'chip ruim'; chip.textContent = 'Vencido'; }
   else if (dias != null && dias <= 3) { chip.className = 'chip aviso'; chip.textContent = 'Vence logo'; }
   else { chip.className = 'chip ok'; chip.textContent = 'Ativo'; }
-  $('dias').innerHTML = fim == null ? '∞<small>sem prazo</small>' : `${dias}<small>${dias === 1 ? 'dia' : 'dias'}</small>`;
-  $('vence').textContent = fim == null ? 'Seu acesso não tem data para acabar.' : vencido ? `Venceu em ${data(c.expira_em, true)}.` : `Vence em ${data(c.expira_em, true)}.`;
-  $('bloco-barra').hidden = fim == null;
-  if (fim != null) { $('barra').style.width = Math.min(100, Math.round(dias / 30 * 100)) + '%'; $('barra-fim').textContent = data(c.expira_em); }
+  const min = fim == null ? 0 : Math.max(0, Math.round((fim - agora) / 60000));
+  $('dias').innerHTML = semPlano ? '3h<small>de teste grátis</small>' : emTeste ? `${Math.floor(min / 60)}h${String(min % 60).padStart(2, '0')}<small>de teste</small>`
+    : fim == null ? '∞<small>sem prazo</small>' : `${dias}<small>${dias === 1 ? 'dia' : 'dias'}</small>`;
+  $('vence').textContent = semPlano ? 'Baixe o PokeOver e entre com este login: o teste de 3 horas começa no primeiro acesso (uma vez por PC).'
+    : emTeste ? `O teste acaba em ${data(c.expira_em, true)}.` : testeAcabou ? 'Assine para continuar usando o PokeOver com este mesmo login.'
+    : fim == null ? 'Seu acesso não tem data para acabar.' : vencido ? `Venceu em ${data(c.expira_em, true)}.` : `Vence em ${data(c.expira_em, true)}.`;
+  $('bloco-barra').hidden = fim == null || semPlano || testeAcabou;
+  if (fim != null) { $('barra').style.width = (emTeste ? Math.min(100, Math.round(min / 180 * 100)) : Math.min(100, Math.round(dias / 30 * 100))) + '%'; $('barra-fim').textContent = data(c.expira_em, emTeste); }
   $('renovar').hidden = fim == null && c.ativo;
-  $('renovar').textContent = vencido ? 'Renovar agora' : 'Renovar';
+  $('renovar').href = 'comprar.html?login=' + encodeURIComponent(c.usuario);
+  $('renovar').textContent = semPlano || emTeste || testeAcabou ? 'Assinar · R$ 15/mês' : vencido ? 'Renovar agora' : 'Renovar';
   $('nota-renovar').textContent = c.assinatura
     ? 'Sua assinatura renova sozinha: a cobrança de cada mês chega no seu email. Pagou, ganha mais 30 dias.'
-    : fim == null ? '' : 'Para renovar, chame o suporte no WhatsApp. Cada renovação soma 30 dias.';
+    : fim == null ? '' : semPlano || emTeste || testeAcabou ? 'Assinando, o mês entra neste mesmo login.' : 'Renovar soma 30 dias neste login.';
   $('f-login').textContent = c.usuario;
   $('f-plano').textContent = plano;
-  $('f-situacao').textContent = !c.ativo ? 'Desativado' : vencido ? 'Vencido' : 'Ativo';
+  $('f-situacao').textContent = !c.ativo ? 'Desativado' : semPlano ? 'Sem plano' : emTeste ? 'Teste grátis' : testeAcabou ? 'Teste acabou' : vencido ? 'Vencido' : 'Ativo';
   $('f-ate').textContent = fim == null ? 'Sem prazo' : data(c.expira_em, true);
   $('f-pc').textContent = c.pc_preso ? `Ligado a um PC desde ${data(c.preso_em)}` : 'Nenhum ainda. Liga no primeiro login no programa';
   $('f-visto').textContent = c.pc_visto_em ? ha(c.pc_visto_em) : '—';
@@ -316,7 +343,30 @@ $('f-senha').addEventListener('submit', async e => {
 });
 
 // esqueci a senha
-const tela = qual => { $('tela-entrar').hidden = qual !== 'entrar'; $('tela-recuperar').hidden = qual !== 'recuperar'; };
+const tela = qual => { $('tela-entrar').hidden = qual !== 'entrar'; $('tela-recuperar').hidden = qual !== 'recuperar'; $('tela-criar').hidden = qual !== 'criar'; };
+const MSG_CRIAR = { usuario_em_uso: 'Esse login já existe. Escolha outro.', usuario_invalido: 'O login deve ter de 3 a 20 letras, números ou _.',
+  email_invalido: 'Confira o email.', senha_fraca: 'A senha precisa de 6 caracteres ou mais (e não pode ser 12345).', muitos: 'Muitas contas criadas agora. Tente de novo em alguns minutos.' };
+$('ir-criar').onclick = e => { e.preventDefault(); tela('criar'); $('c-u').focus(); };
+$('ir-entrar').onclick = e => { e.preventDefault(); tela('entrar'); };
+$('c-u').addEventListener('input', e => { const v = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''); if (v !== e.target.value) e.target.value = v; });
+$('f-criar').addEventListener('submit', async e => {
+  e.preventDefault();
+  const m = $('m-criar'), b = $('b-criar'); m.className = 'msg'; m.textContent = '';
+  const u = $('c-u').value.trim(), email = $('c-email').value.trim(), s1 = $('c-s').value;
+  if (!/^[a-z0-9_]{3,20}$/.test(u)) { m.textContent = MSG_CRIAR.usuario_invalido; return; }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { m.textContent = MSG_CRIAR.email_invalido; return; }
+  if (s1.length < 6 || s1 === '12345') { m.textContent = MSG_CRIAR.senha_fraca; return; }
+  if (s1 !== $('c-s2').value) { m.textContent = 'As duas senhas não são iguais.'; return; }
+  b.disabled = true; b.textContent = 'Criando…';
+  try {
+    const r = await rpc('pokeover_conta_criar', { p_usuario: u, p_senha: s1, p_email: email });
+    if (r.status !== 'ok') { m.textContent = MSG_CRIAR[r.status] || 'Não deu certo: ' + r.status; return; }
+    const t = await rpc('pokeover_conta_entrar', { p_usuario: u, p_senha: s1 });
+    if (t.status === 'ok') { sessao.set(t.token); ['c-s', 'c-s2'].forEach(id => ($(id).value = '')); await carregar(); }
+    else { tela('entrar'); $('u').value = u; $('m-entrar').className = 'msg ok'; $('m-entrar').textContent = 'Conta criada. Entre com ela.'; }
+  } catch (err) { m.textContent = err.message; }
+  finally { b.disabled = false; b.textContent = 'Criar conta'; }
+});
 $('ir-recuperar').onclick = e => { e.preventDefault(); $('r-u').value = $('u').value; $('f-pedir').hidden = false; $('f-recuperar').hidden = true; tela('recuperar'); };
 $('voltar-entrar').onclick = e => { e.preventDefault(); tela('entrar'); };
 const FUNCOES = SB + '/functions/v1/';
@@ -395,7 +445,7 @@ $('f-email').addEventListener('submit', async e => {
 });
 
 $('sair').onclick = async () => { const t = sessao.get(); sessao.set(null); mostrarEntrar(); if (t) rpc('pokeover_conta_sair', { p_token: t }).catch(() => {}); };
-carregar();
+if (location.hash === '#criar' && !sessao.get()) tela('criar'); else carregar();
 </script>
 </body>
 </html>

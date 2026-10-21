@@ -111,7 +111,7 @@ footer a { color: var(--ouro); }
 
 <main class="faixa"><div class="miolo">
   <h1>Assinar o <span class="realce">PokeOver</span></h1>
-  <p class="lead">Preencha os dados, pague na fatura do Asaas e receba o login na hora, aqui e no seu email.</p>
+  <p class="lead">Preencha os dados, pague na fatura do Asaas e receba o login na hora, aqui e no seu email. Já criou conta ou fez o teste? Use o mesmo login.</p>
   <section class="preco" id="assinar">
     <div>
       <div class="valor num">R$15<small>/mês</small></div>
@@ -133,6 +133,7 @@ footer a { color: var(--ouro); }
           <div class="campo"><label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="voce@email.com"><span class="dica">A cobrança de cada mês chega aqui.</span></div>
           <div class="campo"><label for="cpf">CPF</label><input id="cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" maxlength="14"><span class="dica" id="dica-cpf">Exigido para emitir a cobrança.</span></div>
           <div class="campo largo"><label for="usuario">Login que você quer no PokeOver</label><input id="usuario" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="seunome" maxlength="20"><span class="dica" id="dica-usuario">De 3 a 20 letras, números ou _.</span></div>
+          <div class="campo largo" id="campo-senha" hidden><label for="senha">Senha desse login</label><input id="senha" type="password" autocomplete="current-password"><span class="dica">Já tem conta (criou no site ou fez o teste)? Com a senha, a assinatura entra nela.</span></div>
           <div class="erro" id="erro" hidden></div>
           <div class="rodape-form">
             <button class="cta" id="pagar" type="submit">Continuar para o pagamento</button>
@@ -180,7 +181,7 @@ async function chamar(corpo) {
   try { r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) }); }
   catch { throw new Error('Não foi possível falar com o servidor. Confira sua internet e tente de novo.'); }
   const d = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(d.erro || 'Algo deu errado, tente de novo.');
+  if (!r.ok) { const e = new Error(d.erro || 'Algo deu errado, tente de novo.'); e.precisaSenha = !!d.precisaSenha; throw e; }
   return d;
 }
 
@@ -209,8 +210,9 @@ $('usuario').addEventListener('input', e => {
     try {
       const { livre } = await chamar({ acao: 'livre', usuario: v });
       if ($('usuario').value !== v) return;
-      dica.textContent = livre ? 'Esse login está livre.' : 'Esse login já está em uso, escolha outro.';
+      dica.textContent = livre ? 'Esse login está livre: vai ser criado quando o pagamento confirmar.' : 'Esse login já existe. Se é seu, digite a senha abaixo para assinar com ele.';
       dica.className = 'dica ' + (livre ? 'ok' : 'ruim');
+      $('campo-senha').hidden = livre;
     } catch { dica.textContent = 'Não deu para conferir agora; a gente confere ao pagar.'; dica.className = 'dica'; }
   }, 450);
 });
@@ -219,6 +221,7 @@ $('form').addEventListener('submit', async e => {
   e.preventDefault();
   const erro = $('erro'); erro.hidden = true;
   const dados = { acao: 'comprar', nome: $('nome').value.trim(), email: $('email').value.trim(), cpf: $('cpf').value.replace(/\D/g, ''), usuario: $('usuario').value.trim() };
+  if (!$('campo-senha').hidden && $('senha').value) dados.senha = $('senha').value;
   const falha = dados.nome.length < 3 ? 'Digite seu nome completo.' : !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(dados.email) ? 'Confira o email.' :
     !cpfValido(dados.cpf) ? 'Confira o CPF.' : !/^[a-z0-9_]{3,20}$/.test(dados.usuario) ? 'O login deve ter de 3 a 20 letras, números ou _.' : '';
   if (falha) { erro.textContent = falha; erro.hidden = false; return; }
@@ -231,6 +234,7 @@ $('form').addEventListener('submit', async e => {
     mostrarPedido(r.token, { estado: 'aguardando', fatura: r.fatura, usuario: dados.usuario });
   } catch (err) {
     if (aba) aba.close();
+    if (err.precisaSenha) { $('campo-senha').hidden = false; $('senha').focus(); }
     erro.textContent = err.message; erro.hidden = false;
   } finally { botao.disabled = false; botao.textContent = 'Continuar para o pagamento'; }
 });
@@ -276,6 +280,8 @@ document.querySelectorAll('[data-copiar]').forEach(b => b.addEventListener('clic
   setTimeout(() => (b.textContent = 'Copiar'), 1800);
 }));
 
+// vindo da área do cliente (?login=…): assinar com a conta que já existe
+{ const l = new URLSearchParams(location.search).get('login'); if (l) { $('usuario').value = l.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 20); $('usuario').dispatchEvent(new Event('input')); $('campo-senha').hidden = false; } }
 const doLink = new URLSearchParams(location.search).get('pedido');
 const pedidoAberto = (doLink && /^[0-9a-f]{32}$/.test(doLink)) ? doLink : ler('pokeover:pedido');
 if (pedidoAberto) mostrarPedido(pedidoAberto);
