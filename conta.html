@@ -353,6 +353,7 @@ $('f-criar').addEventListener('submit', async e => {
   e.preventDefault();
   const m = $('m-criar'), b = $('b-criar'); m.className = 'msg'; m.textContent = '';
   const u = $('c-u').value.trim(), email = $('c-email').value.trim(), s1 = $('c-s').value;
+  contar('enviou criar conta');
   if (!/^[a-z0-9_]{3,20}$/.test(u)) { m.textContent = MSG_CRIAR.usuario_invalido; return; }
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { m.textContent = MSG_CRIAR.email_invalido; return; }
   if (s1.length < 6 || s1 === '12345') { m.textContent = MSG_CRIAR.senha_fraca; return; }
@@ -447,5 +448,6 @@ $('f-email').addEventListener('submit', async e => {
 $('sair').onclick = async () => { const t = sessao.get(); sessao.set(null); mostrarEntrar(); if (t) rpc('pokeover_conta_sair', { p_token: t }).catch(() => {}); };
 if (location.hash === '#criar' && !sessao.get()) tela('criar'); else carregar();
 </script>
+<script src="contador.js"></script>
 </body>
 </html>

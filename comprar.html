@@ -220,6 +220,7 @@ $('usuario').addEventListener('input', e => {
 $('form').addEventListener('submit', async e => {
   e.preventDefault();
   const erro = $('erro'); erro.hidden = true;
+  contar('enviou o pedido de compra');
   const dados = { acao: 'comprar', nome: $('nome').value.trim(), email: $('email').value.trim(), cpf: $('cpf').value.replace(/\D/g, ''), usuario: $('usuario').value.trim() };
   if (!$('campo-senha').hidden && $('senha').value) dados.senha = $('senha').value;
   const falha = dados.nome.length < 3 ? 'Digite seu nome completo.' : !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(dados.email) ? 'Confira o email.' :
@@ -286,5 +287,6 @@ const doLink = new URLSearchParams(location.search).get('pedido');
 const pedidoAberto = (doLink && /^[0-9a-f]{32}$/.test(doLink)) ? doLink : ler('pokeover:pedido');
 if (pedidoAberto) mostrarPedido(pedidoAberto);
 </script>
+<script src="contador.js"></script>
 </body>
 </html>
